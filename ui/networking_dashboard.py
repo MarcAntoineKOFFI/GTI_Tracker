@@ -38,14 +38,39 @@ class NetworkingDashboard(QWidget):
         title.setStyleSheet("font-size: 28px; font-weight: bold; color: #2c3e50;")
         layout.addWidget(title)
 
-        # Action bar
+        # Action bar with primary "View All Contacts" button
         action_bar = QHBoxLayout()
 
-        stats_btn = QPushButton("View All Statistics")
+        # Primary action: View all contacts
+        view_all_btn = QPushButton("📇 View All Contacts")
+        view_all_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF8B3D;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #FF9E54;
+            }
+            QPushButton:pressed {
+                background-color: #E67A2D;
+            }
+        """)
+        view_all_btn.clicked.connect(lambda: self.show_contact_list.emit(False))
+        action_bar.addWidget(view_all_btn)
+
+        # Secondary actions
+        stats_btn = QPushButton("View Statistics")
+        stats_btn.setProperty("class", "secondary")
         stats_btn.clicked.connect(self.show_statistics.emit)
         action_bar.addWidget(stats_btn)
 
         self.followup_btn = QPushButton("Needs Follow-Up (0)")
+        self.followup_btn.setProperty("class", "secondary")
         self.followup_btn.clicked.connect(lambda: self.show_contact_list.emit(True))
         action_bar.addWidget(self.followup_btn)
 
@@ -186,6 +211,9 @@ class NetworkingDashboard(QWidget):
         """Load data from database and update UI"""
         session = get_session()
         try:
+            # Force SQLAlchemy to fetch fresh data (not cached objects)
+            session.expire_all()
+
             from db.models import Settings
 
             # Total contacts

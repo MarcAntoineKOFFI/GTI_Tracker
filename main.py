@@ -22,15 +22,25 @@ logger = logging.getLogger(__name__)
 def load_stylesheet(app: QApplication) -> None:
     """Load and apply the application stylesheet"""
     try:
-        stylesheet_path = Path(__file__).parent / 'styles' / 'main.qss'
+        # Try dark professional theme first (new Bloomberg-inspired design)
+        dark_theme_path = Path(__file__).parent / 'styles' / 'dark_professional.qss'
 
-        if stylesheet_path.exists():
-            with open(stylesheet_path, 'r', encoding='utf-8') as f:
+        if dark_theme_path.exists():
+            with open(dark_theme_path, 'r', encoding='utf-8') as f:
                 stylesheet = f.read()
                 app.setStyleSheet(stylesheet)
-                logger.info("Stylesheet loaded successfully")
+                logger.info("Dark professional stylesheet loaded successfully")
+                return
+
+        # Fallback to main.qss if dark theme not found
+        main_stylesheet_path = Path(__file__).parent / 'styles' / 'main.qss'
+        if main_stylesheet_path.exists():
+            with open(main_stylesheet_path, 'r', encoding='utf-8') as f:
+                stylesheet = f.read()
+                app.setStyleSheet(stylesheet)
+                logger.info("Main stylesheet loaded successfully")
         else:
-            logger.warning(f"Stylesheet not found at {stylesheet_path}")
+            logger.warning(f"No stylesheet found")
 
     except Exception as e:
         logger.error(f"Failed to load stylesheet: {e}")

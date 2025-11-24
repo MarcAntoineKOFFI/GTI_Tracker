@@ -1,159 +1,211 @@
 # GTI Tracker - Quick Start Guide
 
-Welcome to GTI Tracker! This guide will help you get started quickly.
+Welcome to GTI Tracker! This guide will get you up and running in 5 minutes.
 
-## Installation
+## 📦 Installation (2 minutes)
 
-1. **Install Python 3.8+** (if not already installed)
-   - Download from https://www.python.org/downloads/
+### Step 1: Install Python
+- Download Python 3.8+ from [python.org](https://www.python.org/downloads/)
+- During installation, check "Add Python to PATH"
 
-2. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Step 2: Install GTI Tracker
+```bash
+# Navigate to GTI_Tracker directory
+cd path/to/GTI_Tracker
 
-3. **Run the application**
-   ```bash
-   python main.py
-   ```
+# Install dependencies
+pip install -r requirements.txt
+```
 
-## First Steps
+### Step 3: Launch
+```bash
+python main.py
+```
 
-### 1. Set Up Your Profile (5 minutes)
+## 🎯 First Steps (3 minutes)
 
-When you first open the app:
+### 1. Configure Your Profile
 
-1. Click the **⚙️ Settings** button in the top-right
-2. Go to **Personal Information** tab
-3. Fill in:
-   - Your Name
-   - Your School/University
-   - Your Career Ambitions (what you want to achieve)
-4. Go to **Message Template** tab
-5. Review and customize the networking message template
-6. Click **Save Settings**
+Click the **⚙️ Settings** button (top-right)
 
-### 2. Add Your First Networking Contact (2 minutes)
+**Personal Information tab:**
+- Your Name: `John Smith`
+- Your School: `Stanford University`
+- Your Ambitions: `Breaking into product management at tech companies`
 
-1. Click on **📇 Networking** in the sidebar (if not already selected)
-2. Click the large **+ Add Networking Activity** button
-3. Fill in the contact details:
-   - Name: e.g., "Sarah Johnson"
-   - Job Title: e.g., "Senior Software Engineer"
-   - Company: e.g., "Google"
-   - Contact Date: (defaults to today)
-   - Relevant Information: Any notes about how you found them or shared connections
-   - Status: Leave as "Cold message" for new contacts
-4. Click **Add Contact**
+Click **Save Settings**
 
-### 3. Generate Your Networking Message (1 minute)
+### 2. Add Your First Contact
 
-1. From the dashboard, click **View All Contacts** or double-click the contact
-2. In the contact detail view, see the **Suggested Networking Message**
-3. Click **Copy to Clipboard** to copy the message
-4. Send it via LinkedIn, email, or your preferred platform!
+**Networking tab → Add Networking Activity**
 
-### 4. Add Your First Internship Application (2 minutes)
+Example:
+- Name: `Sarah Johnson`
+- Job Title: `Product Manager`
+- Company: `Google`
+- Contact Date: `Today`
+- Relevant Info: `Met at Stanford career fair, both interested in AI`
+- Status: `Cold message`
 
-1. Click on **💼 Internships** in the sidebar
-2. Click **+ Add Internship Application**
-3. Fill in:
-   - Role Name: e.g., "Software Engineering Intern"
-   - Company: e.g., "Microsoft"
-   - Job Link: (optional) paste the URL to the job posting
-   - Application Date: (defaults to today)
-   - Linked Contact: (optional) select if someone referred you
-   - Status: "Applied"
-4. Click **Add Application**
+Click **Add Contact**
 
-### 5. Track Your Progress
+### 3. Generate a Networking Message
 
-**Networking Dashboard:**
-- See total professionals contacted
-- View contacts made in the last 7 days (chart)
-- Monitor contacts that need follow-up
+Click on your contact → **Copy to Clipboard** button
 
-**Internships Dashboard:**
-- See total applications
-- View status distribution (pie chart)
-- Track active applications
+The app generates a personalized message using your template!
 
-**Statistics:**
-- Click "View All Statistics" or "View Statistics" for detailed analytics
-- See conversion funnels
-- Compare networking impact (referrals vs. no referrals)
+### 4. Add Your First Application
 
-## Daily Workflow
+**Internships tab → Add Internship Application**
 
-### Morning Routine (5 minutes)
-1. Open GTI Tracker
-2. Check "Needs Follow-Up" on Networking dashboard
-3. Follow up with flagged contacts
-4. Add any new contacts you plan to reach out to today
+Example:
+- Role Name: `Product Manager Intern`
+- Company: `Google`
+- Job Link: `https://careers.google.com/jobs/...`
+- Application Date: `Today`
+- Linked Contact: `Sarah Johnson` (optional - select from dropdown)
+- Status: `Applied`
 
-### Application Tracking (as needed)
-1. Add new applications as you apply
-2. Update status when you hear back
-3. Link applications to networking contacts when relevant
+Click **Add Application**
 
-### Weekly Review (10 minutes)
-1. Click "View All Statistics" in both tabs
-2. Review your progress
-3. Identify patterns (which companies respond? does networking help?)
-4. Adjust your strategy based on data
+## 💡 Pro Tips
 
-## Pro Tips
+### Track Follow-Ups
+- Dashboard shows "Needs Follow-Up" count
+- Click to see contacts requiring attention
+- Default: 3 days since last contact with no response
 
-✅ **Update contact status immediately** after responses to track follow-up timing
+### Use Search & Filters
+- **Ctrl+F** to quickly search contacts/applications
+- Filter by status to focus on specific stages
+- Sort by date, name, or company
 
-✅ **Link applications to contacts** to measure networking effectiveness
+### View Statistics
+- Click "View All Statistics" to see:
+  - Progress charts
+  - Conversion funnels
+  - Weekly activity trends
+  - Top companies
+  - Networking impact analysis
 
-✅ **Export data weekly** as a backup (Settings → Data Management → Export Full Database)
+### Keyboard Shortcuts
+- `Ctrl+N` - Add new contact/application
+- `Ctrl+F` - Focus search
+- `Ctrl+1` - Networking tab
+- `Ctrl+2` - Internships tab
+- `Ctrl+,` - Settings
 
-✅ **Customize your message template** to match your voice and style
+### Export Your Data
+Settings → Data Management → Export options:
+- Export contacts to CSV
+- Export applications to CSV
+- Export full database (recommended for backups!)
 
-✅ **Use the search function** to quickly find contacts or applications
+## 🔄 Typical Workflow
 
-✅ **Set realistic follow-up days** in Settings (3-7 days is typical)
+### Week 1: Networking Focus
+1. Add 10 networking contacts from LinkedIn
+2. Generate and send personalized messages
+3. Mark contacts as "Cold message"
 
-## Keyboard Shortcuts
+### Week 2: Follow-Up
+1. Check "Needs Follow-Up" on dashboard
+2. Send follow-up messages
+3. Update statuses as responses come in
 
-- **Double-click** any row to view details
-- **Ctrl+F** to focus search field
-- Use **Tab** to navigate between fields in forms
+### Week 3: Applications
+1. Link applications to your networking contacts
+2. Track which contacts led to applications
+3. Monitor application statuses
 
-## Troubleshooting
+### Ongoing: Track Progress
+1. Weekly: Check statistics to see trends
+2. Adjust strategy based on conversion rates
+3. Export data monthly for records
 
-**Problem:** Application won't start
-- **Solution:** Check that Python 3.8+ is installed and dependencies are installed
+## 🎨 Customizing Message Templates
 
-**Problem:** Can't see my data
-- **Solution:** Check that you're on the right tab (Networking vs. Internships)
+Settings → Message Template tab
 
-**Problem:** Statistics show zero
-- **Solution:** Add some contacts or applications first!
+Available placeholders:
+- `{name}` - Contact's name
+- `{job_title}` - Their job title
+- `{company}` - Their company
+- `{user_name}` - Your name
+- `{user_school}` - Your school
+- `{user_ambitions}` - Your career goals
+- `{relevant_info}` - Contact-specific notes
 
-**Problem:** Message template not updating
-- **Solution:** Make sure to click "Save Settings" after making changes
+**Tip**: Keep templates professional but personable!
 
-## Getting Help
+## 📊 Understanding Statistics
 
-- Check the main README.md for detailed documentation
-- Database location: `%APPDATA%\GTI_Tracker\gti_tracker.db` (Windows)
-- Export your data before making major changes
+### Networking Stats
+- **Total Contacts**: Everyone you've reached out to
+- **Status Distribution**: See how many are in each stage
+- **Contacts Per Week**: Track your consistency
+- **Conversion Funnel**: Cold message → Response → Call → Interview
+- **Top Companies**: Where you're networking most
 
-## Next Steps
+### Internship Stats
+- **Total Applications**: All applications submitted
+- **Active Applications**: Currently in progress (not offer/rejected)
+- **Offer Rate**: Percentage resulting in offers
+- **Rejection Rate**: Learn from closed applications
+- **Networking Impact**: Applications with referrals vs. without
+- **Timeline**: Applications per week
 
-Once you're comfortable with the basics:
+## 🚨 Common Questions
 
-1. Explore the **Statistics** windows for deeper insights
-2. Try **importing/exporting CSV** data for analysis in Excel
-3. Experiment with different **message templates** for different industries
-4. Use the **Linked Contact** feature to track referral success rates
+**Q: Can I edit a contact/application?**  
+A: Yes! Click on any row in the list, then click "Edit" in the detail view.
+
+**Q: How do I link an application to a contact?**  
+A: When adding/editing an application, use the "Linked Contact" dropdown.
+
+**Q: Can I backup my data?**  
+A: Yes! Settings → Data Management → "Export Full Database"
+
+**Q: What if I accidentally delete something?**  
+A: Unfortunately, deletions are permanent. Always export backups regularly!
+
+**Q: Can I change the follow-up reminder threshold?**  
+A: Yes! Settings → Notifications & Reminders → adjust the days value.
+
+**Q: Does the app work offline?**  
+A: Yes! All data is stored locally on your computer.
+
+## 🎯 Success Metrics to Track
+
+Monitor these weekly:
+- [ ] Networking contacts added: Target 5-10/week
+- [ ] Applications submitted: Target 3-5/week
+- [ ] Follow-ups completed: All flagged contacts
+- [ ] Response rate: Aim for >20%
+- [ ] Interview rate: Track and improve
+- [ ] Networking to interview conversion: Goal >5%
+
+## 📈 Next Steps
+
+Now that you're set up:
+
+1. ✅ Add all your recent networking contacts (backfill)
+2. ✅ Add all your current applications
+3. ✅ Set a weekly goal (e.g., 5 new contacts, 3 applications)
+4. ✅ Review statistics every Friday
+5. ✅ Adjust your strategy based on data
 
 ---
 
-**Remember:** Consistency is key! Use GTI Tracker daily to build networking habits and track your internship search systematically.
+**Need More Help?**
+- Check [FEATURES.md](FEATURES.md) for detailed feature docs
+- Review [README.md](README.md) for full documentation
+- Open an issue on GitHub for bugs/questions
 
-Good luck with your internship search! 🚀
+---
+
+**GET THAT INTERNSHIP!!!** 🎉
+
+Good luck with your search! Remember: consistency and data-driven decisions lead to success.
 

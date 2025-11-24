@@ -298,7 +298,23 @@ class MainWindow(QMainWindow):
 
     def on_data_changed(self):
         """Refresh views when data changes"""
+        from PySide6.QtWidgets import QApplication
+
+        # Refresh networking dashboard
         self.networking_dashboard.refresh()
+
+        # Refresh internship dashboard
+        self.internship_dashboard.refresh()
+
+        # Force immediate UI update
+        QApplication.processEvents()
+
+        # If on list views, refresh them too
+        current_view = self.stacked_widget.currentWidget()
+        if current_view == self.networking_list:
+            self.networking_list.load_contacts()
+        elif current_view == self.internship_list:
+            self.internship_list.load_internships()
         self.internship_dashboard.refresh()
 
     def on_settings_saved(self):

@@ -1,28 +1,135 @@
 # GTI Tracker - GET-THAT-INTERNSHIP Tracker
 
-A comprehensive desktop application designed to help students manage their internship search through structured networking and application tracking.
+<div align="center">
 
-## Features
+**A comprehensive desktop application designed to help students systematically manage their internship search through structured networking and application tracking.**
+
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PySide6](https://img.shields.io/badge/PySide6-6.6+-green.svg)](https://pypi.org/project/PySide6/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+</div>
+
+---
+
+## ✨ Features Overview
+
+GTI Tracker transforms the chaotic internship search process into a systematic, data-driven approach with actionable insights and clear organizational structures.
 
 ### 🤝 Networking Management
-- **Contact Tracking**: Track professionals you've reached out to with detailed information
-- **Status Management**: Monitor contacts through stages (Cold message, Has responded, Call, Interview)
-- **Follow-up Reminders**: Automatic flagging of contacts needing follow-up
-- **Message Generator**: AI-powered networking message templates with customizable placeholders
-- **Statistics & Analytics**: Visualize your networking progress with charts and metrics
+
+#### Core Features
+- **📋 Contact Tracking**: Store and organize every professional you reach out to with comprehensive details
+  - Name, job title, company, and contact date
+  - Relevant information field for connection points and shared interests
+  - Automatic timestamp tracking (created and last updated)
+  
+- **📊 Status Management**: Monitor relationship progression through four stages
+  - **Cold message** - Initial outreach sent
+  - **Has responded** - Professional replied
+  - **Call** - Phone/video conversation scheduled or completed
+  - **Interview** - Interview opportunity secured
+  
+- **⏰ Follow-up Reminders**: Never miss a networking opportunity
+  - Automatic flagging of contacts needing follow-up (configurable threshold, default 3 days)
+  - Visual indicators for contacts requiring attention
+  - Quick filter to view all follow-up needed contacts
+  
+- **✉️ Message Generator**: Create personalized networking messages instantly
+  - Customizable templates with dynamic placeholders
+  - Preview functionality to see generated messages
+  - One-click copy to clipboard
+  - Placeholders: {name}, {job_title}, {company}, {user_name}, {user_school}, {user_ambitions}, {relevant_info}
+  
+- **📈 Statistics & Analytics**: 
+  - Total contacts and status distribution
+  - Contacts per week over last 12 weeks (bar chart)
+  - Conversion funnel visualization
+  - Response rate analysis
+  - Top companies contacted
+  - CSV export for detailed reporting
 
 ### 💼 Internship Application Tracking
-- **Application Management**: Track all your internship applications in one place
-- **Status Tracking**: Monitor applications through the recruitment pipeline
-- **Contact Linking**: Link applications to networking contacts to track referral effectiveness
-- **Job Link Storage**: Quick access to original job postings
-- **Comprehensive Statistics**: Analyze your application success rates and patterns
+
+#### Core Features
+- **📝 Application Management**: Centralized tracking for all applications
+  - Role name, company, and application date
+  - Optional job posting URL with test link functionality
+  - Notes field for interview details, salary info, etc.
+  - Link applications to networking contacts
+  
+- **🔄 Status Tracking**: Monitor applications through five stages
+  - **Applied** - Application submitted
+  - **Screening** - Recruiter reviewing or phone screen
+  - **Interview** - Interview rounds in progress
+  - **Offer** - Offer received
+  - **Rejected** - Application unsuccessful
+  
+- **🔗 Contact Linking**: Connect applications to networking relationships
+  - Track which applications came through referrals
+  - Quickly navigate between linked contacts and applications
+  - Measure networking impact on success rates
+  
+- **🌐 Job Link Storage**: 
+  - Store URLs to original job postings
+  - Test links before saving
+  - Quick access to job descriptions
+  
+- **📊 Comprehensive Statistics**:
+  - Total applications, active applications, and offers
+  - Rejection rate calculation
+  - Applications per week over last 12 weeks (timeline chart)
+  - Status distribution (pie chart)
+  - Conversion funnel (Applied → Screening → Interview → Offer)
+  - Networking impact comparison
+  - Top target companies
+  - CSV export functionality
 
 ### 📊 Data-Driven Insights
-- **Networking Impact Analysis**: Compare success rates for applications with vs. without referrals
-- **Conversion Funnels**: Visualize your progress through networking and interview stages
-- **Status Distribution**: See where your efforts are concentrated
-- **Export & Import**: CSV export/import for data portability and backups
+
+#### Advanced Analytics
+- **🎯 Networking Impact Analysis**: 
+  - Compare success rates for applications with vs. without referrals
+  - Quantify the value of networking efforts
+  - Data-driven motivation to build relationships
+  
+- **📈 Conversion Funnels**: 
+  - Visualize progression through networking stages
+  - Track application pipeline advancement
+  - Identify bottlenecks in your process
+  
+- **📉 Status Distribution Charts**: 
+  - Pie charts showing where contacts/applications stand
+  - Understand where to focus efforts
+  
+- **📅 Timeline Tracking**:
+  - Weekly bar charts for both networking and applications
+  - Identify productivity patterns
+  - Track consistency over time
+  
+- **💾 Export & Import**: 
+  - CSV export for contacts and applications
+  - Full database backup capability
+  - Import historical data
+  - Share data across devices
+
+### ⚙️ Settings & Customization
+
+- **👤 Personal Information**: Configure your name, school, and career ambitions
+- **✉️ Message Templates**: Fully customizable networking message templates
+- **🔔 Notifications**: Adjustable follow-up reminder threshold
+- **📦 Data Management**: Import/export capabilities and database reset options
+
+### ⌨️ Keyboard Shortcuts
+
+- `Ctrl+N` - Add new contact/application (context-aware)
+- `Ctrl+F` - Focus search field in list views
+- `Ctrl+,` - Open settings
+- `Ctrl+1` - Switch to Networking tab
+- `Ctrl+2` - Switch to Internships tab
+- `Esc` - Close dialogs
+
+---
 
 ## Installation
 
@@ -176,38 +283,128 @@ Customize your networking message template with these placeholders:
 
 ### Follow-up Settings
 
-Adjust the number of days before flagging contacts for follow-up in Settings → Notifications & Reminders
-
-## Troubleshooting
-
-### Application won't start
-- Ensure Python 3.8+ is installed
-- Verify all dependencies are installed: `pip install -r requirements.txt`
-- Check the console for error messages
-
-### Database errors
-- The app creates the database automatically on first run
-- If issues persist, delete the database file and restart the app (WARNING: this deletes all data)
-
-### UI issues
-- Try resizing the window
-- Check that PySide6 is properly installed
-- Restart the application
-
-## Contributing
-
-This is a student project. Feel free to fork and customize for your needs!
-
-## License
-
-This project is provided as-is for educational and personal use.
-
-## Credits
-
-Developed as a comprehensive internship tracking solution for students.
+Adjust the number of days before flagging contacts for follow-up in Settings → Notifications & Reminders (default: 3 days)
 
 ---
 
-**Version**: 1.0.0  
-**Built with**: Python, PySide6, SQLAlchemy
+## 🗂️ Project Structure
+
+```
+GTI_Tracker/
+├── main.py                      # Application entry point
+├── requirements.txt             # Python dependencies
+├── README.md                    # This file
+├── FEATURES.md                  # Detailed feature documentation
+├── QUICKSTART.md               # Quick start guide
+├── test_components.py          # Component tests
+│
+├── db/                         # Database layer
+│   ├── models.py               # SQLAlchemy ORM models
+│   └── session.py              # Database session management
+│
+├── ui/                         # User interface components
+│   ├── main_window.py          # Main application window
+│   ├── networking_dashboard.py # Networking dashboard
+│   ├── networking_list.py      # Contact list view
+│   ├── networking_dialogs.py   # Contact dialogs
+│   ├── networking_stats.py     # Networking statistics
+│   ├── internship_dashboard.py # Internship dashboard
+│   ├── internship_list.py      # Application list view
+│   ├── internship_dialogs.py   # Application dialogs
+│   ├── internship_stats.py     # Internship statistics
+│   └── settings_dialog.py      # Settings dialog
+│
+├── utils/                      # Utility functions
+│   ├── charts.py               # Chart helpers
+│   ├── date_helpers.py         # Date utilities
+│   ├── message_generator.py   # Message templates
+│   └── validators.py           # Input validation
+│
+├── resources/                  # Application resources
+│   └── icons.py                # Icon generation
+│
+└── styles/                     # Stylesheets
+    └── main.qss                # Qt stylesheet
+```
+
+---
+
+## 💾 Data Storage
+
+### Database Location
+
+The SQLite database is stored at OS-appropriate locations:
+
+- **Windows**: `%APPDATA%\GTI_Tracker\gti_tracker.db`
+- **macOS**: `~/Library/Application Support/GTI_Tracker/gti_tracker.db`
+- **Linux**: `~/.local/share/GTI_Tracker/gti_tracker.db`
+
+### Backup Your Data
+
+**Recommended**: Settings → Data Management → "Export Full Database"
+
+**Manual Backup**: Copy the `gti_tracker.db` file to a safe location
+
+---
+
+## 🐛 Troubleshooting
+
+### Application won't start
+- Ensure Python 3.8+ is installed: `python --version`
+- Verify dependencies: `pip install -r requirements.txt`
+- Check terminal for error messages
+
+### Database errors
+- Database is created automatically on first run
+- To reset: Settings → Data Management → Reset All Data (⚠️ deletes all data!)
+- Always backup before resetting
+
+### UI issues
+- Application supports high-DPI displays automatically
+- Try resizing the window or restarting the application
+- Verify PySide6 installation: `pip show PySide6`
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Feel free to:
+- Report bugs via GitHub Issues
+- Suggest features
+- Submit pull requests
+- Improve documentation
+
+---
+
+## 📄 License
+
+This project is provided as-is for educational and personal use under the MIT License.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with [PySide6](https://pypi.org/project/PySide6/) - Qt for Python
+- [SQLAlchemy](https://www.sqlalchemy.org/) - Python SQL toolkit
+- Designed to empower students in their internship search journey
+
+---
+
+## 📧 Support
+
+For help and documentation:
+- Check [FEATURES.md](FEATURES.md) for detailed features
+- Review [QUICKSTART.md](QUICKSTART.md) for quick tips  
+- Open GitHub Issues for bug reports
+
+---
+
+<div align="center">
+
+**Version 1.0.0**  
+**Made with ❤️ to help students GET THAT INTERNSHIP!!!**
+
+⭐ Star this repo if it helped you!
+
+</div>
 

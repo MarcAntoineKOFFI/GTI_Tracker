@@ -5,13 +5,14 @@ from datetime import date, timedelta
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
     QPushButton, QComboBox, QTableWidget, QTableWidgetItem,
-    QHeaderView, QLabel, QMessageBox, QAbstractItemView
+    QHeaderView, QLabel, QMessageBox, QAbstractItemView,
+    QScrollArea, QGridLayout, QFrame, QButtonGroup
 )
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QIcon, QFont, QCursor
 from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
-from utils.date_helpers import format_date
+from utils.date_helpers import format_date, days_since
 from sqlalchemy import or_
 
 
@@ -23,6 +24,7 @@ class NetworkingListView(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.filter_followup = False
+        self.view_mode = "table"  # "table" or "cards"
         self.setup_ui()
         self.load_contacts()
 
@@ -36,6 +38,7 @@ class NetworkingListView(QWidget):
         top_bar = QHBoxLayout()
 
         back_btn = QPushButton("← Back to Dashboard")
+        back_btn.setProperty("class", "secondary")
         back_btn.clicked.connect(self.go_back.emit)
         top_bar.addWidget(back_btn)
 
@@ -47,8 +50,25 @@ class NetworkingListView(QWidget):
 
         top_bar.addStretch()
 
+        # View mode toggle
+        view_mode_label = QLabel("View:")
+        view_mode_label.setProperty("class", "secondary-text")
+        top_bar.addWidget(view_mode_label)
+
+        self.table_view_btn = QPushButton("📋 Table")
+        self.table_view_btn.setProperty("class", "compact")
+        self.table_view_btn.setCheckable(True)
+        self.table_view_btn.setChecked(True)
+        self.table_view_btn.clicked.connect(lambda: self.set_view_mode("table"))
+        top_bar.addWidget(self.table_view_btn)
+
+        self.card_view_btn = QPushButton("🗂️ Cards")
+        self.card_view_btn.setProperty("class", "compact")
+        self.card_view_btn.setCheckable(True)
+        self.card_view_btn.clicked.connect(lambda: self.set_view_mode("cards"))
+        top_bar.addWidget(self.card_view_btn)
+
         add_btn = QPushButton("+ Add Activity")
-        add_btn.setStyleSheet("background-color: #3498db; color: white;")
         add_btn.clicked.connect(self.add_contact)
         top_bar.addWidget(add_btn)
 
@@ -99,20 +119,55 @@ class NetworkingListView(QWidget):
         self.table.setAlternatingRowColors(True)
         self.table.cellDoubleClicked.connect(self.on_row_double_clicked)
 
+        # Card view container
+        self.cards_scroll = QScrollArea()
+        self.cards_scroll.setWidgetResizable(True)
+        self.cards_scroll.setFrameShape(QScrollArea.NoFrame)
+
+        self.cards_container = QWidget()
+        self.cards_layout = QGridLayout(self.cards_container)
+        self.cards_layout.setSpacing(16)
+        self.cards_layout.setContentsMargins(0, 0, 0, 0)
+        self.cards_scroll.setWidget(self.cards_container)
+        self.cards_scroll.hide()
+
         # Empty state
         self.empty_state = QWidget()
         empty_layout = QVBoxLayout(self.empty_state)
         empty_layout.setAlignment(Qt.AlignCenter)
 
-        empty_label = QLabel("No contacts yet.\nClick 'Add Activity' to get started!")
+        empty_icon = QLabel("📇")
+        empty_icon.setAlignment(Qt.AlignCenter)
+        font = empty_icon.font()
+        font.setPointSize(48)
+        empty_icon.setFont(font)
+        empty_layout.addWidget(empty_icon)
+
+        empty_label = QLabel("No contacts yet")
         empty_label.setAlignment(Qt.AlignCenter)
-        empty_label.setStyleSheet("font-size: 16px; color: #95a5a6;")
+        empty_label.setProperty("class", "heading-3")
         empty_layout.addWidget(empty_label)
+
+        empty_sublabel = QLabel("Click 'Add Activity' to start building your network")
+        empty_sublabel.setAlignment(Qt.AlignCenter)
+        empty_sublabel.setProperty("class", "secondary-text")
+        empty_layout.addWidget(empty_sublabel)
 
         self.empty_state.hide()
 
         layout.addWidget(self.table)
+        layout.addWidget(self.cards_scroll)
         layout.addWidget(self.empty_state)
+
+    def set_view_mode(self, mode):
+        """Switch between table and card view modes"""
+        self.view_mode = mode
+
+        self.table_view_btn.setChecked(mode == "table")
+        self.card_view_btn.setChecked(mode == "cards")
+
+        # Re-display contacts in new mode
+        self.filter_contacts()
 
     def load_contacts(self):
         """Load contacts from database"""
@@ -175,14 +230,24 @@ class NetworkingListView(QWidget):
         self.display_contacts(filtered)
 
     def display_contacts(self, contacts):
-        """Display contacts in the table"""
+        """Display contacts in either table or card view"""
         if not contacts:
             self.table.hide()
+            self.cards_scroll.hide()
             self.empty_state.show()
             return
 
-        self.table.show()
         self.empty_state.hide()
+
+        if self.view_mode == "table":
+            self.display_table_view(contacts)
+        else:
+            self.display_card_view(contacts)
+
+    def display_table_view(self, contacts):
+        """Display contacts in table format"""
+        self.table.show()
+        self.cards_scroll.hide()
 
         self.table.setRowCount(len(contacts))
 
@@ -212,6 +277,168 @@ class NetworkingListView(QWidget):
             # Actions
             actions_widget = self.create_actions_widget(contact.id)
             self.table.setCellWidget(row, 5, actions_widget)
+
+    def display_card_view(self, contacts):
+        """Display contacts as cards in grid layout"""
+        self.table.hide()
+        self.cards_scroll.show()
+
+        # Clear existing cards
+        while self.cards_layout.count():
+            item = self.cards_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        # Display contacts as cards (3 per row)
+        for idx, contact in enumerate(contacts):
+            card = self.create_contact_card(contact)
+            row = idx // 3
+            col = idx % 3
+            self.cards_layout.addWidget(card, row, col)
+
+        # Add stretch to push cards to top
+        self.cards_layout.setRowStretch(self.cards_layout.rowCount(), 1)
+
+    def create_contact_card(self, contact: NetworkingContact) -> QFrame:
+        """Create a professional contact card widget"""
+        card = QFrame()
+        card.setFrameShape(QFrame.StyledPanel)
+        card.setCursor(QCursor(Qt.PointingHandCursor))
+        card.setStyleSheet("""
+            QFrame {
+                background-color: #1E2330;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 20px;
+            }
+            QFrame:hover {
+                border: 1px solid rgba(255, 139, 61, 0.3);
+                background-color: #272D3D;
+            }
+        """)
+
+        layout = QVBoxLayout(card)
+        layout.setSpacing(12)
+
+        # Header with initials circle and name
+        header_layout = QHBoxLayout()
+
+        # Initials circle
+        initials = "".join([word[0].upper() for word in contact.name.split()[:2]])
+        initials_label = QLabel(initials)
+        initials_label.setAlignment(Qt.AlignCenter)
+        initials_label.setFixedSize(48, 48)
+        initials_label.setStyleSheet("""
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                        stop:0 #FF8B3D, stop:1 #FF9E54);
+            color: #0B0E1D;
+            border-radius: 24px;
+            font-size: 18px;
+            font-weight: 700;
+        """)
+        header_layout.addWidget(initials_label)
+
+        # Name and title
+        name_layout = QVBoxLayout()
+        name_layout.setSpacing(2)
+
+        name_label = QLabel(contact.name)
+        name_label.setProperty("class", "heading-3")
+        name_label.setWordWrap(True)
+        name_layout.addWidget(name_label)
+
+        title_label = QLabel(contact.job_title)
+        title_label.setProperty("class", "secondary-text")
+        title_label.setWordWrap(True)
+        name_layout.addWidget(title_label)
+
+        header_layout.addLayout(name_layout, 1)
+        layout.addLayout(header_layout)
+
+        # Company
+        company_label = QLabel(f"🏢 {contact.company}")
+        company_label.setProperty("class", "secondary-text")
+        layout.addWidget(company_label)
+
+        # Divider
+        divider = QFrame()
+        divider.setFrameShape(QFrame.HLine)
+        divider.setStyleSheet("background-color: rgba(255, 255, 255, 0.05); max-height: 1px;")
+        layout.addWidget(divider)
+
+        # Status and date row
+        status_date_layout = QHBoxLayout()
+
+        # Status badge
+        status_badge = QLabel(contact.status.value.upper())
+        status_colors = {
+            "Cold message": ("rgba(158, 158, 158, 0.15)", "#9E9E9E"),
+            "Has responded": ("rgba(74, 158, 255, 0.15)", "#4A9EFF"),
+            "Call": ("rgba(155, 89, 208, 0.15)", "#9B59D0"),
+            "Interview": ("rgba(255, 139, 61, 0.15)", "#FF8B3D")
+        }
+        bg_color, text_color = status_colors.get(contact.status.value, ("rgba(158, 158, 158, 0.15)", "#9E9E9E"))
+        status_badge.setStyleSheet(f"""
+            background-color: {bg_color};
+            color: {text_color};
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        """)
+        status_date_layout.addWidget(status_badge)
+
+        status_date_layout.addStretch()
+
+        # Days since contact
+        days_ago = days_since(contact.contact_date)
+        days_label = QLabel(f"{days_ago}d ago" if days_ago > 0 else "Today")
+        days_label.setProperty("class", "tertiary-text")
+        status_date_layout.addWidget(days_label)
+
+        layout.addLayout(status_date_layout)
+
+        # Relevant info preview (if exists)
+        if contact.relevant_info:
+            info_preview = contact.relevant_info[:80] + "..." if len(contact.relevant_info) > 80 else contact.relevant_info
+            info_label = QLabel(f"📝 {info_preview}")
+            info_label.setProperty("class", "tertiary-text")
+            info_label.setWordWrap(True)
+            layout.addWidget(info_label)
+
+        layout.addStretch()
+
+        # Action buttons
+        actions_layout = QHBoxLayout()
+        actions_layout.setSpacing(8)
+
+        # Generate message button
+        message_btn = QPushButton("✉️ Message")
+        message_btn.setProperty("class", "compact")
+        message_btn.clicked.connect(lambda: self.show_contact_detail(contact.id))
+        actions_layout.addWidget(message_btn)
+
+        # Edit button
+        edit_btn = QPushButton("✏️")
+        edit_btn.setProperty("class", "icon-only")
+        edit_btn.setFixedSize(32, 32)
+        edit_btn.clicked.connect(lambda: self.edit_contact(contact.id))
+        actions_layout.addWidget(edit_btn)
+
+        # Delete button
+        delete_btn = QPushButton("🗑️")
+        delete_btn.setProperty("class", "icon-only")
+        delete_btn.setFixedSize(32, 32)
+        delete_btn.clicked.connect(lambda: self.delete_contact(contact.id))
+        actions_layout.addWidget(delete_btn)
+
+        layout.addLayout(actions_layout)
+
+        # Make entire card clickable to open detail
+        card.mousePressEvent = lambda e: self.show_contact_detail(contact.id)
+
+        return card
 
     def create_status_badge(self, status: str) -> QWidget:
         """Create a status badge widget"""

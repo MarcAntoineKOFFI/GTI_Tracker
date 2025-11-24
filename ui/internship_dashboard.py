@@ -176,6 +176,9 @@ class InternshipDashboard(QWidget):
         """Load data from database and update UI"""
         session = get_session()
         try:
+            # Force SQLAlchemy to fetch fresh data
+            session.expire_all()
+
             # Total applications
             total = session.query(InternshipApplication).count()
             self.total_count_label.setText(str(total))

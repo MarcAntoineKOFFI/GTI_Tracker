@@ -210,6 +210,84 @@ class InternshipStatsDialog(QDialog):
         group.setLayout(layout)
         self.content_layout.addWidget(group)
 
+    def create_timeline_chart_section(self, applications):
+        """Create applications over time bar chart"""
+        group = QGroupBox("Applications Over Last 12 Weeks")
+        layout = QVBoxLayout()
+
+        # Get last 12 weeks
+        weeks = get_last_n_weeks(12)
+
+        # Count applications per week
+        week_counts = defaultdict(int)
+        for app in applications:
+            app_date = app.application_date
+            for week_start, week_end in weeks:
+                if week_start <= app_date <= week_end:
+                    week_key = f"{week_start.month}/{week_start.day}"
+                    week_counts[week_key] += 1
+                    break
+
+        # Create bar chart
+        series = QBarSeries()
+        bar_set = QBarSet("Applications")
+        bar_set.setColor(QColor("#3498db"))
+
+        categories = []
+        counts_list = []
+        for week_start, week_end in reversed(weeks):
+            week_key = f"{week_start.month}/{week_start.day}"
+            categories.append(week_key)
+            count = week_counts.get(week_key, 0)
+            bar_set.append(count)
+            counts_list.append(count)
+
+        series.append(bar_set)
+
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Applications Per Week")
+        chart.setAnimationOptions(QChart.SeriesAnimations)
+
+        # X Axis
+        axis_x = QBarCategoryAxis()
+        axis_x.append(categories)
+        chart.addAxis(axis_x, Qt.AlignBottom)
+        series.attachAxis(axis_x)
+
+        # Y Axis
+        axis_y = QValueAxis()
+        max_count = max(counts_list) if counts_list else 5
+        axis_y.setRange(0, max_count + 2)
+        axis_y.setLabelFormat("%d")
+        chart.addAxis(axis_y, Qt.AlignLeft)
+        series.attachAxis(axis_y)
+
+        chart.legend().setVisible(False)
+
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.Antialiasing)
+        chart_view.setMinimumHeight(300)
+
+        layout.addWidget(chart_view)
+
+        # Statistics below chart
+        if counts_list:
+            avg = sum(counts_list) / len(counts_list)
+            best_count = max(counts_list)
+            best_week_idx = counts_list.index(best_count)
+            best_week = categories[best_week_idx]
+
+            stats_label = QLabel(
+                f"Average: {avg:.1f} applications/week  |  "
+                f"Best week: {best_week} with {best_count} applications"
+            )
+            stats_label.setStyleSheet("color: #7f8c8d; font-size: 12px; padding: 8px;")
+            layout.addWidget(stats_label)
+
+        group.setLayout(layout)
+        self.content_layout.addWidget(group)
+
     def create_funnel_section(self, status_counts, total):
         """Create conversion funnel section"""
         group = QGroupBox("Conversion Funnel")
