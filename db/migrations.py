@@ -47,6 +47,9 @@ class DatabaseMigrator:
         """Migrate database to version 2 schema"""
         logger.info("Starting migration to v2 schema...")
 
+        # Ensure created_at exists first
+        self.add_column_if_not_exists('networking_contacts', 'created_at', 'DATETIME', 'CURRENT_TIMESTAMP')
+
         # Add new columns to networking_contacts
         self.add_column_if_not_exists('networking_contacts', 'email', 'VARCHAR(255)')
         self.add_column_if_not_exists('networking_contacts', 'linkedin_url', 'VARCHAR(500)')
@@ -57,19 +60,22 @@ class DatabaseMigrator:
         # Handle updated_at / last_updated transition for networking_contacts
         if self.column_exists('networking_contacts', 'last_updated'):
             if not self.column_exists('networking_contacts', 'updated_at'):
-                # Copy data from last_updated to updated_at
+                # Rename last_updated to updated_at
                 try:
                     with self.engine.connect() as conn:
+                        # SQLite doesn't support RENAME COLUMN easily, so copy data
                         conn.execute(text(
-                            "ALTER TABLE networking_contacts ADD COLUMN updated_at DATETIME"
+                            "ALTER TABLE networking_contacts ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP"
                         ))
                         conn.execute(text(
-                            "UPDATE networking_contacts SET updated_at = last_updated"
+                            "UPDATE networking_contacts SET updated_at = last_updated WHERE last_updated IS NOT NULL"
                         ))
                         conn.commit()
                         logger.info("Migrated last_updated to updated_at for networking_contacts")
                 except Exception as e:
                     logger.error(f"Failed to migrate updated_at: {e}")
+                    # If it fails, just ensure updated_at exists
+                    self.add_column_if_not_exists('networking_contacts', 'updated_at', 'DATETIME', 'CURRENT_TIMESTAMP')
         else:
             self.add_column_if_not_exists('networking_contacts', 'updated_at', 'DATETIME', 'CURRENT_TIMESTAMP')
 

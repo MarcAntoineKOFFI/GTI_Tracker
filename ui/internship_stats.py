@@ -38,7 +38,7 @@ class InternshipStatsDialog(QDialog):
 
         # Title
         title = QLabel("Internship Statistics")
-        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50;")
+        title.setStyleSheet("font-size: 24px; font-weight: bold; color: #FFFFFF;")
         main_layout.addWidget(title)
 
         # Scroll area
@@ -153,10 +153,10 @@ class InternshipStatsDialog(QDialog):
         card = QWidget()
         card.setStyleSheet(f"""
             QWidget {{
-                background-color: white;
+                background-color: #0A0A0A;
                 border: 2px solid {color};
-                border-radius: 6px;
-                padding: 12px;
+                border-radius: 8px;
+                padding: 16px;
             }}
         """)
 

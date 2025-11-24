@@ -45,7 +45,7 @@ class SettingsDialog(QDialog):
 
         # Title
         title = QLabel("Settings")
-        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #2c3e50;")
+        title.setStyleSheet("font-size: 20px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
 
         # Tab widget

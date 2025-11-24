@@ -18,6 +18,36 @@ from utils.enterprise_validators import InputValidator, FormValidator
 from utils.message_generator import generate_networking_message
 from utils.date_helpers import days_since, format_date
 from utils.error_handler import handle_errors, activity_logger
+from ui.toast import show_success, show_error, show_info
+
+
+# Input field stylesheet for dark theme
+INPUT_FIELD_STYLE = """
+    QLineEdit, QTextEdit, QComboBox, QDateEdit {
+        background-color: #1E2330;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        padding: 8px 12px;
+        color: #FFFFFF;
+        font-size: 14px;
+    }
+    QLineEdit::placeholder, QTextEdit::placeholder {
+        color: #6B7280;
+    }
+    QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDateEdit:focus {
+        border: 2px solid #FF8B3D;
+    }
+    QComboBox::drop-down {
+        border: none;
+    }
+    QComboBox::down-arrow {
+        image: none;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #FFFFFF;
+        margin-right: 8px;
+    }
+"""
 
 
 class AddEditContactDialog(QDialog):
@@ -51,6 +81,7 @@ class AddEditContactDialog(QDialog):
         # Name field
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g., John Smith")
+        self.name_input.setStyleSheet(INPUT_FIELD_STYLE)
         self.name_error = QLabel()
         self.name_error.setObjectName("error-label")
         self.name_error.setStyleSheet("color: #e74c3c; font-size: 11px;")
@@ -67,6 +98,7 @@ class AddEditContactDialog(QDialog):
 
         # Job Title field
         self.job_title_input = QLineEdit()
+        self.job_title_input.setStyleSheet(INPUT_FIELD_STYLE)
         self.job_title_input.setPlaceholderText("e.g., Senior Software Engineer")
         self.job_title_error = QLabel()
         self.job_title_error.setStyleSheet("color: #e74c3c; font-size: 11px;")
@@ -83,6 +115,7 @@ class AddEditContactDialog(QDialog):
 
         # Company field with autocomplete
         self.company_input = QLineEdit()
+        self.company_input.setStyleSheet(INPUT_FIELD_STYLE)
         self.company_input.setPlaceholderText("e.g., Google")
         self.setup_company_completer()
         self.company_error = QLabel()
@@ -264,9 +297,9 @@ class AddEditContactDialog(QDialog):
                 self.contact.contact_date = contact_date
                 self.contact.relevant_info = self.relevant_info_input.toPlainText().strip()
                 self.contact.status = self.status_input.currentData()
-                self.contact.last_updated = datetime.now()
 
                 session.merge(self.contact)
+                message = f"Contact '{self.contact.name}' updated successfully!"
             else:
                 # Create new contact
                 new_contact = NetworkingContact(
@@ -275,23 +308,29 @@ class AddEditContactDialog(QDialog):
                     company=self.company_input.text().strip(),
                     contact_date=contact_date,
                     relevant_info=self.relevant_info_input.toPlainText().strip(),
-                    status=self.status_input.currentData(),
-                    created_at=datetime.now(),
-                    last_updated=datetime.now()
+                    status=self.status_input.currentData()
                 )
                 session.add(new_contact)
+                message = f"Contact '{new_contact.name}' added successfully!"
 
             session.commit()
+
+            # Show success toast
+            show_success(self.parent(), message)
+
+            # Log activity
+            activity_logger.log_action(
+                action="ADDED_CONTACT" if not self.is_edit_mode else "UPDATED_CONTACT",
+                entity_type="NetworkingContact",
+                details={"name": self.name_input.text().strip()}
+            )
+
             self.contact_saved.emit()
             self.accept()
 
         except Exception as e:
             session.rollback()
-            QMessageBox.critical(
-                self,
-                "Error",
-                f"Failed to save contact: {str(e)}"
-            )
+            show_error(self.parent(), f"Failed to save contact: {str(e)}")
         finally:
             session.close()
 
@@ -309,7 +348,8 @@ class ContactDetailDialog(QDialog):
         self.settings = None
 
         self.setWindowTitle("Contact Details")
-        self.setFixedSize(750, 850)
+        self.setMinimumSize(800, 600)  # Resizable with minimum size
+        self.resize(900, 700)  # Default size
         self.setModal(True)
 
         self.load_data()
@@ -425,42 +465,126 @@ class ContactDetailDialog(QDialog):
         """Create the header section with contact info"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
+        layout.setSpacing(12)
 
         # Name
         name_label = QLabel(self.contact.name)
-        name_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50;")
+        name_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(name_label)
 
         # Job title and company
         title_label = QLabel(f"{self.contact.job_title} at {self.contact.company}")
-        title_label.setStyleSheet("font-size: 16px; color: #7f8c8d;")
+        title_label.setStyleSheet("font-size: 18px; color: #9BA3B1;")
         layout.addWidget(title_label)
 
-        # Contact date and status
+        # Contact info row (email, LinkedIn, phone)
+        contact_info_layout = QHBoxLayout()
+        contact_info_layout.setSpacing(16)
+
+        if self.contact.email:
+            email_btn = QPushButton(f"✉️ {self.contact.email}")
+            email_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #4A9EFF;
+                    border: 1px solid #4A9EFF;
+                    border-radius: 6px;
+                    padding: 6px 12px;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: rgba(74, 158, 255, 0.1);
+                }
+            """)
+            email_btn.setCursor(Qt.PointingHandCursor)
+            email_btn.clicked.connect(lambda: self.copy_to_clipboard(self.contact.email, "Email"))
+            contact_info_layout.addWidget(email_btn)
+
+        if self.contact.linkedin_url:
+            linkedin_btn = QPushButton("💼 LinkedIn Profile")
+            linkedin_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #0077B5;
+                    border: 1px solid #0077B5;
+                    border-radius: 6px;
+                    padding: 6px 12px;
+                }
+                QPushButton:hover {
+                    background-color: rgba(0, 119, 181, 0.1);
+                }
+            """)
+            linkedin_btn.setCursor(Qt.PointingHandCursor)
+            linkedin_btn.clicked.connect(self.open_linkedin)
+            contact_info_layout.addWidget(linkedin_btn)
+
+        if self.contact.phone:
+            phone_label = QPushButton(f"📞 {self.contact.phone}")
+            phone_label.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #00D97E;
+                    border: 1px solid #00D97E;
+                    border-radius: 6px;
+                    padding: 6px 12px;
+                }
+                QPushButton:hover {
+                    background-color: rgba(0, 217, 126, 0.1);
+                }
+            """)
+            phone_label.setCursor(Qt.PointingHandCursor)
+            phone_label.clicked.connect(lambda: self.copy_to_clipboard(self.contact.phone, "Phone"))
+            contact_info_layout.addWidget(phone_label)
+
+        contact_info_layout.addStretch()
+        layout.addLayout(contact_info_layout)
+
+        # Contact date, status dropdown, and edit button
         info_layout = QHBoxLayout()
+        info_layout.setSpacing(12)
 
         date_label = QLabel(f"Contacted: {format_date(self.contact.contact_date)}")
-        date_label.setStyleSheet("font-size: 13px; color: #95a5a6;")
+        date_label.setStyleSheet("font-size: 14px; color: #9BA3B1;")
         info_layout.addWidget(date_label)
 
         info_layout.addStretch()
 
-        # Status badge
-        status_badge = QLabel(self.contact.status.value)
-        status_badge.setAlignment(Qt.AlignCenter)
-        status_class = self.contact.status.value.lower().replace(" ", "-")
-        status_badge.setStyleSheet(f"""
-            background-color: {self.get_status_color(self.contact.status.value)};
-            color: white;
-            border-radius: 12px;
-            padding: 6px 16px;
-            font-size: 12px;
-            font-weight: 600;
+        # Status label
+        status_label = QLabel("Status:")
+        status_label.setStyleSheet("font-size: 14px; color: #FFFFFF; margin-right: 8px;")
+        info_layout.addWidget(status_label)
+
+        # Status dropdown (for changing status directly)
+        self.status_combo = QComboBox()
+        self.status_combo.setStyleSheet(INPUT_FIELD_STYLE + """
+            QComboBox {
+                min-width: 150px;
+                padding: 8px 12px;
+            }
         """)
-        info_layout.addWidget(status_badge)
+        for status in NetworkingStatus:
+            self.status_combo.addItem(status.value, status)
+            if status == self.contact.status:
+                self.status_combo.setCurrentText(status.value)
+
+        self.status_combo.currentIndexChanged.connect(self.on_status_changed)
+        info_layout.addWidget(self.status_combo)
 
         # Edit button
-        edit_btn = QPushButton("Edit")
+        edit_btn = QPushButton("✏️ Edit")
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF8B3D;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 6px;
+                padding: 8px 16px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #FF9E54;
+            }
+        """)
         edit_btn.clicked.connect(self.edit_contact)
         info_layout.addWidget(edit_btn)
 
@@ -571,6 +695,70 @@ class ContactDetailDialog(QDialog):
             QMessageBox.critical(self, "Error", f"Failed to update: {str(e)}")
         finally:
             session.close()
+
+    def copy_to_clipboard(self, text: str, label: str):
+        """Copy text to clipboard and show confirmation"""
+        from PySide6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        clipboard.setText(text)
+        show_success(self, f"{label} copied to clipboard!")
+
+    def open_linkedin(self):
+        """Open LinkedIn profile in browser"""
+        import webbrowser
+        url = self.contact.linkedin_url
+
+        # Add https:// if not present
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+
+        try:
+            webbrowser.open(url)
+            show_info(self, "Opening LinkedIn profile in browser...")
+        except Exception as e:
+            show_error(self, f"Failed to open LinkedIn: {str(e)}")
+
+    def on_status_changed(self, index):
+        """Handle status change from dropdown"""
+        new_status = self.status_combo.currentData()
+
+        if new_status == self.contact.status:
+            return  # No change
+
+        old_status = self.contact.status
+
+        # Update in database
+        session = get_session()
+        try:
+            contact = session.query(NetworkingContact).filter_by(id=self.contact_id).first()
+            if contact:
+                contact.status = new_status
+                session.commit()
+                self.contact.status = new_status
+
+                # Show congratulatory message based on status progression
+                self.show_status_change_message(old_status, new_status)
+
+                self.contact_updated.emit()
+        except Exception as e:
+            session.rollback()
+            show_error(self, f"Failed to update status: {str(e)}")
+        finally:
+            session.close()
+
+    def show_status_change_message(self, old_status, new_status):
+        """Show appropriate message for status change"""
+        messages = {
+            NetworkingStatus.HAS_RESPONDED: "🎉 Great news! They responded! Keep the momentum going!",
+            NetworkingStatus.CALL: "📞 Awesome! You have a call scheduled! Time to prepare!",
+            NetworkingStatus.INTERVIEW: "🌟 Fantastic! You landed an interview! You've got this!",
+        }
+
+        # Congratulate on progress
+        if new_status in messages:
+            show_success(self, messages[new_status])
+        else:
+            show_info(self, f"Status updated to: {new_status.value}")
 
     def edit_contact(self):
         """Open edit dialog"""

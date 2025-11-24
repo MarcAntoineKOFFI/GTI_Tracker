@@ -58,13 +58,14 @@ class MainWindow(QMainWindow):
 
         # Content area with stacked widget
         content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: #000000;")
         content_layout = QVBoxLayout(content_widget)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(0)
 
         # Settings button in top-right
         settings_bar = QWidget()
-        settings_bar.setStyleSheet("background-color: white; border-bottom: 1px solid #e0e0e0;")
+        settings_bar.setStyleSheet("background-color: #000000; border-bottom: 1px solid rgba(255, 255, 255, 0.15);")
         settings_bar_layout = QHBoxLayout(settings_bar)
         settings_bar_layout.setContentsMargins(12, 8, 12, 8)
         settings_bar_layout.addStretch()
@@ -78,6 +79,7 @@ class MainWindow(QMainWindow):
 
         # Stacked widget for different views
         self.stacked_widget = QStackedWidget()
+        self.stacked_widget.setStyleSheet("QStackedWidget { background-color: #000000; }")
 
         # Networking views
         self.networking_dashboard = NetworkingDashboard()

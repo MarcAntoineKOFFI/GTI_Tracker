@@ -15,6 +15,7 @@ from db.models import InternshipApplication, InternshipStatus, NetworkingContact
 from db.session import get_session
 from utils.validators import validate_required_field, is_valid_url
 from utils.date_helpers import format_date
+from ui.toast import show_success, show_error
 
 
 class AddEditInternshipDialog(QDialog):
@@ -302,9 +303,9 @@ class AddEditInternshipDialog(QDialog):
                 self.internship.application_date = application_date
                 self.internship.status = self.status_input.currentData()
                 self.internship.notes = notes
-                self.internship.last_updated = datetime.now()
 
                 session.merge(self.internship)
+                message = f"Application '{self.internship.role_name}' updated!"
             else:
                 # Create new internship
                 new_internship = InternshipApplication(
@@ -314,22 +315,22 @@ class AddEditInternshipDialog(QDialog):
                     contact_id=contact_id,
                     application_date=application_date,
                     status=self.status_input.currentData(),
-                    notes=notes,
-                    last_updated=datetime.now()
+                    notes=notes
                 )
                 session.add(new_internship)
+                message = f"Application '{new_internship.role_name}' added!"
 
             session.commit()
+
+            # Show success toast
+            show_success(self.parent(), message)
+
             self.internship_saved.emit()
             self.accept()
 
         except Exception as e:
             session.rollback()
-            QMessageBox.critical(
-                self,
-                "Error",
-                f"Failed to save application: {str(e)}"
-            )
+            show_error(self.parent(), f"Failed to save application: {str(e)}")
         finally:
             session.close()
 
@@ -490,7 +491,7 @@ class InternshipDetailDialog(QDialog):
 
         # Role name
         role_label = QLabel(self.internship.role_name)
-        role_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #2c3e50;")
+        role_label.setStyleSheet("font-size: 24px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(role_label)
 
         # Company

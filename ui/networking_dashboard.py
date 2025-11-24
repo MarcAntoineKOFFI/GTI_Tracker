@@ -1,17 +1,17 @@
 """
-Networking dashboard view
+Networking Dashboard with scroll support
 """
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QPushButton, QLabel, QFrame
+    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
+    QFrame, QGridLayout, QScrollArea
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtCharts import QChartView, QChart, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
-from PySide6.QtGui import QPainter
+from PySide6.QtCharts import QChart, QChartView, QBarSet, QBarSeries, QBarCategoryAxis, QValueAxis
+from PySide6.QtGui import QPainter, QColor
 from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
-from utils.date_helpers import get_last_n_days, format_date_short
+from utils.date_helpers import days_since
 from sqlalchemy import func
 
 
@@ -28,14 +28,47 @@ class NetworkingDashboard(QWidget):
         self.load_data()
 
     def setup_ui(self):
-        """Setup the UI components"""
-        layout = QVBoxLayout(self)
-        layout.setSpacing(16)
-        layout.setContentsMargins(20, 20, 20, 20)
+        """Setup the UI components with scroll support"""
+        # Main layout for scroll area
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Create scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setStyleSheet("""
+            QScrollArea {
+                background-color: #000000;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background-color: #0A0A0A;
+                width: 12px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #272D3D;
+                border-radius: 6px;
+                min-height: 30px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #353B4D;
+            }
+        """)
+
+        # Content widget inside scroll
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: #000000;")
+        layout = QVBoxLayout(content_widget)
+        layout.setSpacing(24)  # Increased spacing
+        layout.setContentsMargins(32, 32, 32, 32)  # Increased margins
 
         # Title
         title = QLabel("Networking")
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #2c3e50;")
+        title.setStyleSheet("font-size: 32px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
 
         # Action bar with primary "View All Contacts" button
@@ -100,19 +133,22 @@ class NetworkingDashboard(QWidget):
         layout.addLayout(grid)
         layout.addStretch()
 
+        # Add content widget to scroll area
+        scroll.setWidget(content_widget)
+        main_layout.addWidget(scroll)
+
     def create_card_frame(self) -> QFrame:
         """Create a standard card frame"""
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
+        frame.setMinimumWidth(350)  # Increased for more breathing room
+        frame.setMinimumHeight(220)  # Taller for better proportion
         frame.setStyleSheet("""
             QFrame {
-                background-color: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                padding: 20px;
-            }
-            QFrame:hover {
-                border-color: #3498db;
+                background-color: #0A0A0A;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 12px;
+                padding: 32px;
             }
         """)
         return frame
@@ -125,19 +161,22 @@ class NetworkingDashboard(QWidget):
         btn = QPushButton("+ Add Networking Activity")
         btn.setStyleSheet("""
             QPushButton {
-                background-color: #3498db;
-                color: white;
-                border: none;
-                border-radius: 6px;
+                background-color: #0A0A0A;
+                color: #FFFFFF;
+                border: 2px dashed rgba(255, 139, 61, 0.6);
+                border-radius: 12px;
                 padding: 40px 20px;
                 font-size: 18px;
                 font-weight: 600;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background-color: #151515;
+                border: 2px dashed #FF8B3D;
+                color: #FF8B3D;
             }
             QPushButton:pressed {
-                background-color: #21618c;
+                background-color: #0A0A0A;
+                border: 2px solid #FF8B3D;
             }
         """)
         btn.clicked.connect(self.show_add_contact.emit)
@@ -153,15 +192,16 @@ class NetworkingDashboard(QWidget):
 
         self.total_count_label = QLabel("0")
         self.total_count_label.setStyleSheet("""
-            font-size: 54px;
-            font-weight: 700;
-            color: #2c3e50;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 72px;
+            font-weight: 500;
+            color: #FFFFFF;
         """)
         self.total_count_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.total_count_label)
 
         label = QLabel("Professionals Contacted")
-        label.setStyleSheet("font-size: 14px; color: #7f8c8d;")
+        label.setStyleSheet("font-size: 16px; color: #9BA3B1;")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 
@@ -170,14 +210,18 @@ class NetworkingDashboard(QWidget):
     def create_chart_card(self) -> QFrame:
         """Create the 'Last 7 Days' chart card"""
         frame = self.create_card_frame()
+        frame.setMinimumWidth(500)  # Extra wide for chart
+        frame.setMinimumHeight(280)  # Taller for better chart visibility
         layout = QVBoxLayout(frame)
+        layout.setSpacing(16)
 
-        title = QLabel("Last 7 Days")
-        title.setStyleSheet("font-size: 16px; font-weight: 600; color: #2c3e50;")
+        title = QLabel("Last 7 Days Activity")
+        title.setStyleSheet("font-size: 20px; font-weight: 600; color: #FFFFFF; margin-bottom: 8px;")
         layout.addWidget(title)
 
         self.chart_view = QChartView()
         self.chart_view.setRenderHint(QPainter.Antialiasing)
+        self.chart_view.setMinimumHeight(200)
         layout.addWidget(self.chart_view)
 
         return frame
@@ -193,15 +237,16 @@ class NetworkingDashboard(QWidget):
 
         self.followup_count_label = QLabel("0")
         self.followup_count_label.setStyleSheet("""
-            font-size: 54px;
-            font-weight: 700;
-            color: #95a5a6;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 72px;
+            font-weight: 500;
+            color: #FFFFFF;
         """)
         self.followup_count_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.followup_count_label)
 
         label = QLabel("Needs Follow-Up")
-        label.setStyleSheet("font-size: 14px; color: #7f8c8d;")
+        label.setStyleSheet("font-size: 16px; color: #9BA3B1;")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 

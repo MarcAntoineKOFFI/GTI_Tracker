@@ -32,7 +32,7 @@ class InternshipDashboard(QWidget):
 
         # Title
         title = QLabel("Internships")
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #2c3e50;")
+        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
 
         # Action bar with primary button
@@ -96,15 +96,14 @@ class InternshipDashboard(QWidget):
         """Create a standard card frame"""
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
+        frame.setMinimumWidth(300)  # Increased for more space
+        frame.setMinimumHeight(180)  # Ensure vertical space
         frame.setStyleSheet("""
             QFrame {
-                background-color: white;
-                border: 1px solid #e0e0e0;
+                background-color: #0A0A0A;
+                border: 1px solid rgba(255, 255, 255, 0.2);
                 border-radius: 8px;
                 padding: 20px;
-            }
-            QFrame:hover {
-                border-color: #3498db;
             }
         """)
         return frame
@@ -117,19 +116,22 @@ class InternshipDashboard(QWidget):
         btn = QPushButton("+ Add Internship Application")
         btn.setStyleSheet("""
             QPushButton {
-                background-color: #3498db;
-                color: white;
-                border: none;
-                border-radius: 6px;
+                background-color: #0A0A0A;
+                color: #FFFFFF;
+                border: 2px dashed rgba(255, 139, 61, 0.6);
+                border-radius: 12px;
                 padding: 40px 20px;
                 font-size: 18px;
                 font-weight: 600;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background-color: #151515;
+                border: 2px dashed #FF8B3D;
+                color: #FF8B3D;
             }
             QPushButton:pressed {
-                background-color: #21618c;
+                background-color: #0A0A0A;
+                border: 2px solid #FF8B3D;
             }
         """)
         btn.clicked.connect(self.show_add_internship.emit)
@@ -145,15 +147,16 @@ class InternshipDashboard(QWidget):
 
         self.total_count_label = QLabel("0")
         self.total_count_label.setStyleSheet("""
-            font-size: 54px;
-            font-weight: 700;
-            color: #2c3e50;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 72px;
+            font-weight: 500;
+            color: #FFFFFF;
         """)
         self.total_count_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.total_count_label)
 
         label = QLabel("Total Applications")
-        label.setStyleSheet("font-size: 14px; color: #7f8c8d;")
+        label.setStyleSheet("font-size: 14px; color: #9BA3B1;")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 
@@ -165,7 +168,7 @@ class InternshipDashboard(QWidget):
         layout = QVBoxLayout(frame)
 
         title = QLabel("Status Distribution")
-        title.setStyleSheet("font-size: 16px; font-weight: 600; color: #2c3e50;")
+        title.setStyleSheet("font-size: 16px; font-weight: 600; color: #FFFFFF;")
         layout.addWidget(title)
 
         self.chart_view = QChartView()
@@ -182,15 +185,16 @@ class InternshipDashboard(QWidget):
 
         self.active_count_label = QLabel("0")
         self.active_count_label.setStyleSheet("""
-            font-size: 54px;
-            font-weight: 700;
-            color: #3498db;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 72px;
+            font-weight: 500;
+            color: #FFFFFF;
         """)
         self.active_count_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.active_count_label)
 
         label = QLabel("Active Applications")
-        label.setStyleSheet("font-size: 14px; color: #7f8c8d;")
+        label.setStyleSheet("font-size: 14px; color: #9BA3B1;")
         label.setAlignment(Qt.AlignCenter)
         layout.addWidget(label)
 

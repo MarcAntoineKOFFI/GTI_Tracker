@@ -14,6 +14,8 @@ from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
 from utils.date_helpers import format_date, days_since
 from sqlalchemy import or_
+from ui.empty_state import EmptyState
+from ui.toast import show_success, show_error
 
 
 class NetworkingListView(QWidget):
@@ -44,6 +46,22 @@ class NetworkingListView(QWidget):
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("🔍 Search contacts by name, company, or title")
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                background-color: #1E2330;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 6px;
+                padding: 8px 12px;
+                color: #FFFFFF;
+                font-size: 14px;
+            }
+            QLineEdit::placeholder {
+                color: #6B7280;
+            }
+            QLineEdit:focus {
+                border: 2px solid #FF8B3D;
+            }
+        """)
         self.search_input.textChanged.connect(self.filter_contacts)
         self.search_input.setMinimumWidth(350)
         top_bar.addWidget(self.search_input)
@@ -331,7 +349,7 @@ class NetworkingListView(QWidget):
         initials_label.setStyleSheet("""
             background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
                                         stop:0 #FF8B3D, stop:1 #FF9E54);
-            color: #0B0E1D;
+            color: #FFFFFF;
             border-radius: 24px;
             font-size: 18px;
             font-weight: 700;
@@ -521,28 +539,48 @@ class NetworkingListView(QWidget):
             session.close()
 
     def delete_contact(self, contact_id: int):
-        """Delete a contact"""
-        reply = QMessageBox.question(
-            self,
-            "Confirm Deletion",
-            "Are you sure you want to delete this contact?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
+        """Delete a contact with confirmation"""
+        session = get_session()
+        try:
+            contact = session.query(NetworkingContact).filter_by(id=contact_id).first()
+            if not contact:
+                return
 
-        if reply == QMessageBox.Yes:
-            session = get_session()
-            try:
-                contact = session.query(NetworkingContact).filter_by(id=contact_id).first()
-                if contact:
-                    session.delete(contact)
-                    session.commit()
-                    self.on_contact_changed()
-            except Exception as e:
-                session.rollback()
-                QMessageBox.critical(self, "Error", f"Failed to delete contact: {str(e)}")
-            finally:
-                session.close()
+            # Confirmation dialog
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Warning)
+            msg.setWindowTitle("Confirm Deletion")
+            msg.setText(f"Delete contact '{contact.name}'?")
+            msg.setInformativeText("This action cannot be undone.")
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msg.setDefaultButton(QMessageBox.No)
+
+            # Style the dialog for dark theme
+            msg.setStyleSheet("""
+                QMessageBox {
+                    background-color: #0A0A0A;
+                }
+                QMessageBox QLabel {
+                    color: #FFFFFF;
+                }
+                QPushButton {
+                    min-width: 80px;
+                    padding: 8px 16px;
+                }
+            """)
+
+            if msg.exec() == QMessageBox.Yes:
+                contact_name = contact.name
+                session.delete(contact)
+                session.commit()
+                show_success(self, f"Contact '{contact_name}' deleted")
+                self.on_contact_changed()
+
+        except Exception as e:
+            session.rollback()
+            show_error(self, f"Failed to delete contact: {str(e)}")
+        finally:
+            session.close()
 
     def show_contact_detail(self, contact_id: int):
         """Open contact detail dialog"""

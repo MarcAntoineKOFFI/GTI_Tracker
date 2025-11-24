@@ -25,79 +25,122 @@
 */
 
 /* ===================================================================
-   GLOBAL STYLES
+   GLOBAL STYLES - PURE BLACK EVERYWHERE
    =================================================================== */
 
 * {
     font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
-}
-
-/* Smooth transitions for all interactive elements */
-QPushButton, QLineEdit, QTextEdit, QComboBox, QFrame {
-    transition: all 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    background-color: #000000;  /* FORCE BLACK ON EVERYTHING */
 }
 
 QMainWindow {
-    background-color: #0B0E1D;
+    background-color: #000000;  /* PURE BLACK */
 }
 
 QWidget {
-    color: #E8EAED;
-    background-color: #0B0E1D;
+    color: #FFFFFF;  /* WHITE TEXT */
+    background-color: #000000;  /* BLACK BACKGROUND */
     selection-background-color: rgba(255, 139, 61, 0.3);
-    selection-color: #E8EAED;
+    selection-color: #FFFFFF;
 }
 
 QDialog {
-    background-color: #151923;
+    background-color: #000000;  /* BLACK DIALOGS */
+}
+
+/* Central widget - FORCE BLACK */
+#centralWidget, QMainWindow > QWidget {
+    background-color: #000000 !important;
+}
+
+/* Content areas - BLACK */
+QScrollArea, QScrollArea > QWidget {
+    background-color: #000000 !important;
+}
+
+QFrame {
+    background-color: #0A0A0A;  /* Very dark gray for cards */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Override any white or light backgrounds */
+QWidget[class="content"], QWidget[class="main-content"] {
+    background-color: #000000 !important;
 }
 
 /* ===================================================================
-   SIDEBAR NAVIGATION
+   SIDEBAR NAVIGATION - Dark Theme
    =================================================================== */
 
 #sidebar {
-    background-color: #151923;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-    min-width: 220px;
-    max-width: 220px;
+    background-color: #0A0A0A;  /* Very dark gray, almost black */
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 240px;
+    max-width: 240px;
 }
 
+/* Navigation buttons */
 #sidebar QPushButton {
     background-color: transparent;
-    color: #9BA3B1;
+    color: #B0B5BA;  /* Light gray for visibility */
     border: none;
     border-left: 3px solid transparent;
     text-align: left;
-    padding: 16px 20px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 12px 20px 12px 52px;  /* Space for icon */
+    font-size: 16px;
+    font-weight: 400;
+    min-height: 48px;
+    max-height: 48px;
 }
 
 #sidebar QPushButton:hover {
-    background-color: rgba(255, 139, 61, 0.1);
-    color: #E8EAED;
+    background-color: rgba(255, 255, 255, 0.08);  /* 8% white overlay */
+    color: #FFFFFF;  /* Pure white on hover */
 }
 
 #sidebar QPushButton:checked {
-    background-color: rgba(255, 139, 61, 0.15);
-    border-left: 3px solid #FF8B3D;
-    color: #E8EAED;
-    font-weight: 600;
+    background-color: rgba(255, 139, 61, 0.2);  /* 20% accent opacity */
+    border-left: 3px solid #FF8B3D;  /* Bright accent left border */
+    color: #FF8B3D;  /* Full saturation accent */
+    font-weight: 500;  /* Medium weight for selected */
 }
 
 #sidebar QPushButton:pressed {
-    background-color: rgba(255, 139, 61, 0.2);
+    background-color: rgba(255, 139, 61, 0.25);
+}
+
+/* Branding area */
+#sidebarTitle {
+    color: #FFFFFF;  /* Pure white */
+    font-size: 20px;
+    font-weight: 600;
+    padding-top: 48px;
+    padding-bottom: 8px;
+}
+
+#sidebarTagline {
+    color: #9BA3B1;  /* Medium gray */
+    font-size: 13px;
+    font-weight: 400;
+    padding-bottom: 32px;
+}
+
+/* Version number */
+#versionLabel {
+    color: #6B7280;
+    font-size: 11px;
+    opacity: 0.7;
+    padding: 16px 20px;
 }
 
 /* ===================================================================
-   DASHBOARD CARDS & PANELS
+   DASHBOARD CARDS & PANELS - Light Theme
    =================================================================== */
 
 QFrame {
-    background-color: #1E2330;
+    background-color: rgb(255, 255, 255);  /* Pure white */
     border: none;
     border-radius: 12px;
 }
@@ -105,227 +148,239 @@ QFrame {
 QFrame[frameShape="4"], /* StyledPanel */
 QFrame[frameShape="5"]  /* Panel */
 {
-    background-color: #1E2330;
-    border: 1px solid transparent;
+    background-color: rgb(255, 255, 255);
+    border: none;
     border-radius: 12px;
-    padding: 20px;
+    padding: 32px;  /* Generous padding */
+}
+
+/* Subtle shadow - Level 1 */
+QFrame {
+    /* Shadow simulated through border */
+    border: 1px solid rgba(25, 28, 32, 0.06);
 }
 
 QFrame:hover {
-    border: 1px solid rgba(255, 139, 61, 0.3);
+    border: 1px solid rgba(220, 110, 80, 0.25);
+    /* Would need QPainter for true shadows */
 }
 
 .metric-card {
-    background-color: #1E2330;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 24px;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid rgba(25, 28, 32, 0.06);
+    border-radius: 16px;  /* More rounded for modern feel */
+    padding: 32px;
+    min-height: 160px;
 }
 
 .metric-card:hover {
-    border: 1px solid rgba(255, 139, 61, 0.4);
-    background-color: #272D3D;
+    border: 1px solid rgba(220, 110, 80, 0.3);
 }
 
 /* ===================================================================
-   BUTTONS
+   BUTTONS - Refined Color Palette
    =================================================================== */
 
-/* Primary Action Buttons */
+/* Primary Action Buttons - Sophisticated burnt sienna */
 QPushButton {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FF8B3D, stop:1 #FF7035);
-    color: #0B0E1D;
+                                stop:0 rgb(220, 110, 80), stop:1 rgb(215, 105, 75));
+    color: white;
     border: none;
     border-radius: 8px;
     padding: 12px 24px;
-    font-size: 14px;
-    font-weight: 600;
-    min-height: 44px;
+    font-size: 16px;
+    font-weight: 500;
+    min-height: 48px;
 }
 
 QPushButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FFA04D, stop:1 #FF8545);
+                                stop:0 rgb(230, 120, 90), stop:1 rgb(225, 115, 85));
 }
 
 QPushButton:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #E67A2D, stop:1 #E66025);
-    padding: 13px 24px 11px 24px;
+                                stop:0 rgb(200, 100, 70), stop:1 rgb(195, 95, 65));
+    padding: 13px 24px 11px 24px;  /* Subtle press effect */
 }
 
 QPushButton:disabled {
-    background: #4B5563;
-    color: #6B7280;
+    background: rgb(180, 185, 190);
+    color: rgb(240, 243, 246);
 }
 
-/* Secondary Buttons */
+/* Secondary Buttons - Ghost/Outlined Style */
 QPushButton[class="secondary"] {
     background: transparent;
-    border: 1px solid #4A9EFF;
-    color: #4A9EFF;
+    border: 1px solid rgb(220, 110, 80);
+    color: rgb(220, 110, 80);
 }
 
 QPushButton[class="secondary"]:hover {
-    background: rgba(74, 158, 255, 0.1);
-    border-color: #5AAEFF;
-    color: #5AAEFF;
+    background: rgba(220, 110, 80, 0.1);
+    border-color: rgb(230, 120, 90);
+    color: rgb(230, 120, 90);
 }
 
 QPushButton[class="secondary"]:pressed {
-    background: rgba(74, 158, 255, 0.2);
+    background: rgba(220, 110, 80, 0.2);
 }
 
 /* Danger Buttons */
 QPushButton[class="danger"] {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FF4757, stop:1 #FF5767);
-    color: #FFFFFF;
+                                stop:0 rgb(185, 45, 60), stop:1 rgb(175, 40, 55));
+    color: white;
 }
 
 QPushButton[class="danger"]:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FF5767, stop:1 #FF6777);
+                                stop:0 rgb(195, 55, 70), stop:1 rgb(185, 50, 65));
 }
 
 /* Success Buttons */
 QPushButton[class="success"] {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #00D97E, stop:1 #00E98E);
-    color: #0B0E1D;
+                                stop:0 rgb(40, 155, 95), stop:1 rgb(35, 145, 85));
+    color: white;
 }
 
 QPushButton[class="success"]:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #00E98E, stop:1 #00F99E);
+                                stop:0 rgb(50, 165, 105), stop:1 rgb(45, 155, 95));
 }
 
 /* Compact Buttons */
 QPushButton[class="compact"] {
     padding: 8px 16px;
-    min-height: 32px;
-    font-size: 13px;
+    min-height: 36px;
+    font-size: 14px;
 }
 
 /* Icon Buttons */
 QPushButton[class="icon-only"] {
-    padding: 8px;
-    min-width: 36px;
-    min-height: 36px;
+    padding: 10px;
+    min-width: 40px;
+    min-height: 40px;
     border-radius: 6px;
 }
 
 /* Settings Button */
 #settingsButton {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(25, 28, 32, 0.15);
     border-radius: 6px;
     padding: 8px 16px;
-    color: #9BA3B1;
-    font-size: 13px;
+    color: rgb(100, 105, 110);
+    font-size: 14px;
 }
 
 #settingsButton:hover {
-    background: rgba(255, 139, 61, 0.1);
-    border-color: rgba(255, 139, 61, 0.3);
-    color: #E8EAED;
+    background: rgba(220, 110, 80, 0.08);
+    border-color: rgba(220, 110, 80, 0.3);
+    color: rgb(220, 110, 80);
 }
 
 /* ===================================================================
-   TABLES & LIST VIEWS
+   TABLES & LIST VIEWS - Light Theme
    =================================================================== */
 
 QTableView, QTableWidget {
-    background-color: #151923;
-    alternate-background-color: #1A1F2E;
-    gridline-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: rgb(255, 255, 255);
+    alternate-background-color: rgba(25, 28, 32, 0.02);  /* Subtle striping */
+    gridline-color: rgba(25, 28, 32, 0.08);
+    border: 1px solid rgba(25, 28, 32, 0.08);
     border-radius: 8px;
-    selection-background-color: #272D3D;
-    selection-color: #E8EAED;
+    selection-background-color: rgba(220, 110, 80, 0.12);
+    selection-color: rgb(25, 28, 32);
 }
 
 QTableView::item, QTableWidget::item {
     padding: 16px 12px;
     border: none;
-    color: #E8EAED;
+    color: rgb(25, 28, 32);
+    min-height: 56px;  /* Generous row height */
 }
 
 QTableView::item:hover, QTableWidget::item:hover {
-    background-color: #1E2330;
+    background-color: rgba(25, 28, 32, 0.04);
 }
 
 QTableView::item:selected, QTableWidget::item:selected {
-    background-color: #272D3D;
-    border-left: 3px solid #FF8B3D;
+    background-color: rgba(220, 110, 80, 0.12);
+    border-left: 3px solid rgb(220, 110, 80);
 }
 
 QHeaderView::section {
-    background-color: #0B0E1D;
-    color: #9BA3B1;
+    background-color: rgb(245, 247, 250);  /* Slightly darker than white */
+    color: rgb(100, 105, 110);
     border: none;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 2px solid rgba(25, 28, 32, 0.1);
     padding: 12px;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    min-height: 48px;
 }
 
 QHeaderView::section:hover {
-    background-color: #151923;
-    color: #E8EAED;
+    background-color: rgb(240, 243, 246);
+    color: rgb(25, 28, 32);
 }
 
 /* ===================================================================
-   FORM INPUTS
+   FORM INPUTS - Light Theme
    =================================================================== */
 
 QLineEdit, QTextEdit, QPlainTextEdit {
-    background-color: #1E2330;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgb(248, 249, 250);  /* Subtle gray */
+    border: 1px solid rgba(25, 28, 32, 0.12);
     border-radius: 6px;
     padding: 12px;
-    color: #E8EAED;
-    selection-background-color: rgba(255, 139, 61, 0.3);
+    color: rgb(25, 28, 32);
+    selection-background-color: rgba(220, 110, 80, 0.25);
+    font-size: 16px;
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
-    border: 2px solid #FF8B3D;
-    background-color: #272D3D;
+    border: 2px solid rgb(220, 110, 80);
+    background-color: rgb(255, 255, 255);
+    outline: 4px solid rgba(220, 110, 80, 0.15);  /* Focus glow */
 }
 
 QLineEdit:disabled, QTextEdit:disabled, QPlainTextEdit:disabled {
-    background-color: #151923;
-    color: #6B7280;
-    border-color: rgba(255, 255, 255, 0.05);
+    background-color: rgb(240, 243, 246);
+    color: rgb(155, 160, 165);
+    border-color: rgba(25, 28, 32, 0.08);
 }
 
 QLineEdit::placeholder, QTextEdit::placeholder, QPlainTextEdit::placeholder {
-    color: #6B7280;
+    color: rgb(155, 160, 165);
 }
 
 /* ===================================================================
-   COMBO BOX
+   COMBO BOX - Dark Theme
    =================================================================== */
 
 QComboBox {
-    background-color: #1E2330;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1A1A1A;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 6px;
-    padding: 12px;
-    color: #E8EAED;
+    padding: 12px 16px;
+    color: #FFFFFF;
     min-height: 20px;
 }
 
 QComboBox:focus {
     border: 2px solid #FF8B3D;
+    outline: none;
 }
 
 QComboBox:hover {
-    border-color: rgba(255, 139, 61, 0.3);
-    background-color: #272D3D;
+    border-color: rgba(255, 139, 61, 0.5);
+    background-color: #202020;
 }
 
 QComboBox::drop-down {
@@ -343,15 +398,15 @@ QComboBox::down-arrow {
 }
 
 QComboBox::down-arrow:hover {
-    border-top-color: #E8EAED;
+    border-top-color: #FFFFFF;
 }
 
 QComboBox QAbstractItemView {
-    background-color: #272D3D;
-    border: 1px solid rgba(255, 139, 61, 0.3);
+    background-color: #1A1A1A;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 6px;
-    selection-background-color: rgba(255, 139, 61, 0.2);
-    selection-color: #E8EAED;
+    selection-background-color: rgba(255, 139, 61, 0.25);
+    selection-color: #FFFFFF;
     padding: 4px;
     outline: none;
 }
@@ -440,7 +495,7 @@ QCalendarWidget QAbstractItemView {
 }
 
 /* ===================================================================
-   STATUS BADGES
+   STATUS BADGES - Bright for Dark Theme
    =================================================================== */
 
 QLabel[class="status-badge"] {
@@ -454,44 +509,44 @@ QLabel[class="status-badge"] {
 
 /* Networking Statuses */
 QLabel[class="status-cold-message"] {
-    background-color: rgba(158, 158, 158, 0.15);
-    color: #9E9E9E;
+    background-color: rgba(158, 158, 158, 0.2);
+    color: #B0B5BA;
 }
 
 QLabel[class="status-has-responded"] {
-    background-color: rgba(74, 158, 255, 0.15);
-    color: #4A9EFF;
+    background-color: rgba(74, 158, 255, 0.2);
+    color: #5AAEFF;
 }
 
 QLabel[class="status-call"] {
-    background-color: rgba(155, 89, 208, 0.15);
-    color: #9B59D0;
+    background-color: rgba(155, 89, 208, 0.2);
+    color: #B589D0;
 }
 
 QLabel[class="status-interview"] {
-    background-color: rgba(255, 139, 61, 0.15);
-    color: #FF8B3D;
+    background-color: rgba(255, 139, 61, 0.2);
+    color: #FFA04D;
 }
 
 /* Internship Statuses */
 QLabel[class="status-applied"] {
-    background-color: rgba(158, 158, 158, 0.15);
-    color: #9E9E9E;
+    background-color: rgba(158, 158, 158, 0.2);
+    color: #B0B5BA;
 }
 
 QLabel[class="status-screening"] {
-    background-color: rgba(74, 158, 255, 0.15);
-    color: #4A9EFF;
+    background-color: rgba(74, 158, 255, 0.2);
+    color: #5AAEFF;
 }
 
 QLabel[class="status-offer"] {
-    background-color: rgba(0, 217, 126, 0.15);
-    color: #00D97E;
+    background-color: rgba(0, 217, 126, 0.2);
+    color: #00E98E;
 }
 
 QLabel[class="status-rejected"] {
-    background-color: rgba(255, 71, 87, 0.15);
-    color: #FF4757;
+    background-color: rgba(255, 71, 87, 0.2);
+    color: #FF6B7A;
 }
 
 /* ===================================================================
