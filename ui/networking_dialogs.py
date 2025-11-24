@@ -1,5 +1,5 @@
 """
-Networking-related dialogs
+Networking-related dialogs with enterprise-grade validation
 """
 from datetime import date, datetime
 from typing import Optional
@@ -14,8 +14,10 @@ from PySide6.QtGui import QClipboard
 from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
 from utils.validators import validate_required_field
+from utils.enterprise_validators import InputValidator, FormValidator
 from utils.message_generator import generate_networking_message
 from utils.date_helpers import days_since, format_date
+from utils.error_handler import handle_errors, activity_logger
 
 
 class AddEditContactDialog(QDialog):

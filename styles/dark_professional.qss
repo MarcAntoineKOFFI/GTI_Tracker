@@ -34,6 +34,11 @@
     line-height: 1.5;
 }
 
+/* Smooth transitions for all interactive elements */
+QPushButton, QLineEdit, QTextEdit, QComboBox, QFrame {
+    transition: all 200ms cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
 QMainWindow {
     background-color: #0B0E1D;
 }
@@ -129,7 +134,7 @@ QFrame:hover {
 /* Primary Action Buttons */
 QPushButton {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FF8B3D, stop:1 #FF9E54);
+                                stop:0 #FF8B3D, stop:1 #FF7035);
     color: #0B0E1D;
     border: none;
     border-radius: 8px;
@@ -141,12 +146,13 @@ QPushButton {
 
 QPushButton:hover {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #FFA04D, stop:1 #FFB064);
+                                stop:0 #FFA04D, stop:1 #FF8545);
 }
 
 QPushButton:pressed {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                stop:0 #E67A2D, stop:1 #E68E44);
+                                stop:0 #E67A2D, stop:1 #E66025);
+    padding: 13px 24px 11px 24px;
 }
 
 QPushButton:disabled {

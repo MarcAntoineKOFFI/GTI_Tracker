@@ -1,5 +1,6 @@
 """
 Database session management and initialization
+Enterprise-grade with automatic backups
 """
 import os
 import sys
@@ -10,6 +11,9 @@ from sqlalchemy.orm import sessionmaker, Session
 from db.models import Base, Settings
 
 logger = logging.getLogger(__name__)
+
+# Global backup manager instance
+_backup_manager = None
 
 
 def get_app_data_dir() -> Path:
@@ -57,8 +61,9 @@ def init_database() -> None:
     - Create engine
     - Create all tables if they don't exist
     - Insert default settings if needed
+    - Initialize backup manager and perform scheduled backups
     """
-    global _engine, _SessionFactory
+    global _engine, _SessionFactory, _backup_manager
 
     db_path = get_database_path()
     db_exists = db_path.exists()
@@ -73,6 +78,33 @@ def init_database() -> None:
     # Create all tables
     Base.metadata.create_all(_engine)
     logger.info("Database tables created/verified")
+
+    # Run migrations if needed
+    if db_exists:
+        try:
+            from db.migrations import run_migrations
+            run_migrations()
+        except Exception as e:
+            logger.warning(f"Migration failed: {e}")
+
+    # Create indexes for performance
+    try:
+        from utils.performance import QueryOptimizer
+        QueryOptimizer.add_indexes(_engine)
+    except Exception as e:
+        logger.warning(f"Failed to create indexes: {e}")
+
+    # Initialize backup manager
+    try:
+        from utils.backup_manager import BackupManager
+        _backup_manager = BackupManager(db_path)
+
+        # Perform scheduled backups if database exists
+        if db_exists:
+            _backup_manager.perform_scheduled_backups()
+            logger.info("Scheduled backups completed")
+    except Exception as e:
+        logger.warning(f"Backup manager initialization failed: {e}")
 
     # If this is a new database, insert default settings
     if not db_exists:
@@ -132,4 +164,17 @@ def get_session() -> Session:
 def get_engine():
     """Get the database engine"""
     return _engine
+
+
+def get_backup_manager():
+    """Get the backup manager instance"""
+    return _backup_manager
+
+
+def create_manual_backup():
+    """Create a manual backup of the database"""
+    if _backup_manager:
+        return _backup_manager.create_backup('manual', compress=True)
+    return None
+
 
