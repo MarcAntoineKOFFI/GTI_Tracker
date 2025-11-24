@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
     QScrollArea, QGridLayout, QFrame, QButtonGroup
 )
 from PySide6.QtCore import Qt, Signal, QSize
-from PySide6.QtGui import QIcon, QFont, QCursor
+from PySide6.QtGui import QIcon, QFont, QCursor, QColor
 from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
 from utils.date_helpers import format_date, days_since
@@ -120,6 +120,29 @@ class NetworkingListView(QWidget):
 
         # Table or empty state
         self.table = QTableWidget()
+        self.table.setStyleSheet("""
+            QTableWidget {
+                background-color: #0A0A0A;
+                color: #FFFFFF;
+                gridline-color: rgba(255, 255, 255, 0.05);
+                border: none;
+            }
+            QTableWidget::item {
+                color: #FFFFFF;
+                padding: 8px;
+            }
+            QTableWidget::item:selected {
+                background-color: #272D3D;
+                color: #FFFFFF;
+            }
+            QHeaderView::section {
+                background-color: #151923;
+                color: #9BA3B1;
+                padding: 8px;
+                border: none;
+                font-weight: 600;
+            }
+        """)
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels([
             "Name", "Job Title", "Company", "Contact Date", "Status", "Actions"
@@ -273,20 +296,27 @@ class NetworkingListView(QWidget):
             # Name
             name_item = QTableWidgetItem(contact.name)
             name_item.setData(Qt.UserRole, contact.id)
+            name_item.setForeground(QColor("#FFFFFF"))  # White text
             font = name_item.font()
             font.setBold(True)
             name_item.setFont(font)
             self.table.setItem(row, 0, name_item)
 
             # Job Title
-            self.table.setItem(row, 1, QTableWidgetItem(contact.job_title))
+            title_item = QTableWidgetItem(contact.job_title)
+            title_item.setForeground(QColor("#E8EAED"))  # Light gray text
+            self.table.setItem(row, 1, title_item)
 
             # Company
-            self.table.setItem(row, 2, QTableWidgetItem(contact.company))
+            company_item = QTableWidgetItem(contact.company)
+            company_item.setForeground(QColor("#E8EAED"))  # Light gray text
+            self.table.setItem(row, 2, company_item)
 
             # Contact Date
             date_str = format_date(contact.contact_date)
-            self.table.setItem(row, 3, QTableWidgetItem(date_str))
+            date_item = QTableWidgetItem(date_str)
+            date_item.setForeground(QColor("#9BA3B1"))  # Secondary text color
+            self.table.setItem(row, 3, date_item)
 
             # Status (as badge)
             status_widget = self.create_status_badge(contact.status.value)
@@ -427,29 +457,72 @@ class NetworkingListView(QWidget):
 
         layout.addStretch()
 
-        # Action buttons
+        # Action buttons - aligned at bottom
         actions_layout = QHBoxLayout()
-        actions_layout.setSpacing(8)
+        actions_layout.setSpacing(10)
+        actions_layout.setContentsMargins(0, 12, 0, 0)  # Top margin for separation
 
-        # Generate message button
-        message_btn = QPushButton("✉️ Message")
-        message_btn.setProperty("class", "compact")
+        # View Details button
+        message_btn = QPushButton("View")
+        message_btn.setToolTip("View Details & Message")
+        message_btn.setFixedSize(70, 32)  # Wider for text
+        message_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #4A9EFF;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #5AAFFF;
+            }
+        """)
         message_btn.clicked.connect(lambda: self.show_contact_detail(contact.id))
         actions_layout.addWidget(message_btn)
 
         # Edit button
-        edit_btn = QPushButton("✏️")
-        edit_btn.setProperty("class", "icon-only")
-        edit_btn.setFixedSize(32, 32)
+        edit_btn = QPushButton("Edit")
+        edit_btn.setToolTip("Edit Contact")
+        edit_btn.setFixedSize(60, 32)  # Wider for text
+        edit_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF8B3D;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #FF9E54;
+            }
+        """)
         edit_btn.clicked.connect(lambda: self.edit_contact(contact.id))
         actions_layout.addWidget(edit_btn)
 
         # Delete button
-        delete_btn = QPushButton("🗑️")
-        delete_btn.setProperty("class", "icon-only")
-        delete_btn.setFixedSize(32, 32)
+        delete_btn = QPushButton("Del")
+        delete_btn.setToolTip("Delete Contact")
+        delete_btn.setFixedSize(50, 32)  # Wider for text
+        delete_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF4757;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #FF5767;
+            }
+        """)
         delete_btn.clicked.connect(lambda: self.delete_contact(contact.id))
         actions_layout.addWidget(delete_btn)
+
+        actions_layout.addStretch()  # Push buttons to the left
 
         layout.addLayout(actions_layout)
 

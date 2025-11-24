@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout,
     QLineEdit, QTextEdit, QComboBox, QDateEdit, QPushButton,
     QLabel, QMessageBox, QCompleter, QWidget, QTextBrowser,
-    QGroupBox
+    QGroupBox, QScrollArea
 )
 from PySide6.QtCore import Qt, QDate, Signal
 from PySide6.QtGui import QClipboard
@@ -131,6 +131,24 @@ class AddEditContactDialog(QDialog):
 
         form_layout.addRow("Company *", company_widget)
 
+        # Email field
+        self.email_input = QLineEdit()
+        self.email_input.setStyleSheet(INPUT_FIELD_STYLE)
+        self.email_input.setPlaceholderText("e.g., john.smith@company.com")
+        form_layout.addRow("Email", self.email_input)
+
+        # LinkedIn Profile field
+        self.linkedin_input = QLineEdit()
+        self.linkedin_input.setStyleSheet(INPUT_FIELD_STYLE)
+        self.linkedin_input.setPlaceholderText("e.g., linkedin.com/in/johnsmith")
+        form_layout.addRow("LinkedIn Profile", self.linkedin_input)
+
+        # Phone field
+        self.phone_input = QLineEdit()
+        self.phone_input.setStyleSheet(INPUT_FIELD_STYLE)
+        self.phone_input.setPlaceholderText("e.g., +1 (555) 123-4567")
+        form_layout.addRow("Phone", self.phone_input)
+
         # Contact Date
         self.contact_date_input = QDateEdit()
         self.contact_date_input.setCalendarPopup(True)
@@ -204,6 +222,14 @@ class AddEditContactDialog(QDialog):
         self.name_input.setText(self.contact.name)
         self.job_title_input.setText(self.contact.job_title)
         self.company_input.setText(self.contact.company)
+
+        # Populate email, LinkedIn, and phone if they exist
+        if self.contact.email:
+            self.email_input.setText(self.contact.email)
+        if self.contact.linkedin_url:
+            self.linkedin_input.setText(self.contact.linkedin_url)
+        if self.contact.phone:
+            self.phone_input.setText(self.contact.phone)
 
         q_date = QDate(
             self.contact.contact_date.year,
@@ -368,9 +394,26 @@ class ContactDetailDialog(QDialog):
             session.close()
 
     def setup_ui(self):
-        """Setup the UI components"""
-        layout = QVBoxLayout(self)
-        layout.setSpacing(16)
+        """Setup the UI components with scroll area"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        # Create scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.NoFrame)
+        scroll.setStyleSheet("""
+            QScrollArea {
+                background-color: #0A0A0A;
+                border: none;
+            }
+        """)
+
+        # Content widget
+        content_widget = QWidget()
+        layout = QVBoxLayout(content_widget)
+        layout.setSpacing(20)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         if not self.contact:
             layout.addWidget(QLabel("Contact not found"))
@@ -398,6 +441,17 @@ class ContactDetailDialog(QDialog):
 
         self.message_browser = QTextBrowser()
         self.message_browser.setMinimumHeight(200)
+        self.message_browser.setStyleSheet("""
+            QTextBrowser {
+                background-color: #1E2330;
+                color: #FFFFFF;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 6px;
+                padding: 12px;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        """)
         self.update_message()
         message_layout.addWidget(self.message_browser)
 
@@ -460,6 +514,10 @@ class ContactDetailDialog(QDialog):
         button_layout.addWidget(close_btn)
 
         layout.addLayout(button_layout)
+
+        # Add content to scroll and scroll to main layout
+        scroll.setWidget(content_widget)
+        main_layout.addWidget(scroll)
 
     def create_header_section(self) -> QWidget:
         """Create the header section with contact info"""

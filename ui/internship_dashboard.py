@@ -1,9 +1,9 @@
 """
-Internship dashboard view
+Internship dashboard view with scroll support
 """
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QPushButton, QLabel, QFrame
+    QPushButton, QLabel, QFrame, QScrollArea
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtCharts import QChartView, QPieSeries, QChart
@@ -25,14 +25,47 @@ class InternshipDashboard(QWidget):
         self.load_data()
 
     def setup_ui(self):
-        """Setup the UI components"""
-        layout = QVBoxLayout(self)
-        layout.setSpacing(16)
-        layout.setContentsMargins(20, 20, 20, 20)
+        """Setup the UI components with scroll support"""
+        # Main layout for scroll area
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
+
+        # Create scroll area
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll.setStyleSheet("""
+            QScrollArea {
+                background-color: #000000;
+                border: none;
+            }
+            QScrollBar:vertical {
+                background-color: #0A0A0A;
+                width: 12px;
+                border-radius: 6px;
+            }
+            QScrollBar::handle:vertical {
+                background-color: #272D3D;
+                border-radius: 6px;
+                min-height: 30px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background-color: #353B4D;
+            }
+        """)
+
+        # Content widget inside scroll
+        content_widget = QWidget()
+        content_widget.setStyleSheet("background-color: #000000;")
+        layout = QVBoxLayout(content_widget)
+        layout.setSpacing(24)
+        layout.setContentsMargins(32, 32, 32, 32)
 
         # Title
         title = QLabel("Internships")
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #FFFFFF;")
+        title.setStyleSheet("font-size: 32px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
 
         # Action bar with primary button
@@ -92,18 +125,22 @@ class InternshipDashboard(QWidget):
         layout.addLayout(grid)
         layout.addStretch()
 
+        # Add content widget to scroll area
+        scroll.setWidget(content_widget)
+        main_layout.addWidget(scroll)
+
     def create_card_frame(self) -> QFrame:
         """Create a standard card frame"""
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
-        frame.setMinimumWidth(300)  # Increased for more space
-        frame.setMinimumHeight(180)  # Ensure vertical space
+        frame.setMinimumWidth(350)  # Increased for more breathing room
+        frame.setMinimumHeight(220)  # Taller for better proportion
         frame.setStyleSheet("""
             QFrame {
                 background-color: #0A0A0A;
                 border: 1px solid rgba(255, 255, 255, 0.2);
-                border-radius: 8px;
-                padding: 20px;
+                border-radius: 12px;
+                padding: 32px;
             }
         """)
         return frame

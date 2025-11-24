@@ -6,12 +6,12 @@ from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QFrame, QGridLayout, QScrollArea
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QMargins
 from PySide6.QtCharts import QChart, QChartView, QBarSet, QBarSeries, QBarCategoryAxis, QValueAxis
 from PySide6.QtGui import QPainter, QColor
 from db.models import NetworkingContact, NetworkingStatus
 from db.session import get_session
-from utils.date_helpers import days_since
+from utils.date_helpers import days_since, get_last_n_days, format_date_short
 from sqlalchemy import func
 
 
@@ -188,40 +188,63 @@ class NetworkingDashboard(QWidget):
         """Create the 'Total Professionals' card"""
         frame = self.create_card_frame()
         layout = QVBoxLayout(frame)
+        layout.setSpacing(16)
         layout.setAlignment(Qt.AlignCenter)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         self.total_count_label = QLabel("0")
         self.total_count_label.setStyleSheet("""
             font-family: 'Inter', 'Segoe UI', sans-serif;
-            font-size: 72px;
-            font-weight: 500;
+            font-size: 64px;
+            font-weight: 600;
             color: #FFFFFF;
+            margin: 0px;
+            padding: 0px;
         """)
         self.total_count_label.setAlignment(Qt.AlignCenter)
+        self.total_count_label.setWordWrap(False)
         layout.addWidget(self.total_count_label)
 
         label = QLabel("Professionals Contacted")
-        label.setStyleSheet("font-size: 16px; color: #9BA3B1;")
+        label.setStyleSheet("""
+            font-size: 14px; 
+            color: #9BA3B1;
+            margin: 0px;
+            padding: 0px;
+        """)
         label.setAlignment(Qt.AlignCenter)
+        label.setWordWrap(True)
         layout.addWidget(label)
 
         return frame
 
     def create_chart_card(self) -> QFrame:
-        """Create the 'Last 7 Days' chart card"""
+        """Create the 'Last 7 Days' chart card with modern design"""
         frame = self.create_card_frame()
-        frame.setMinimumWidth(500)  # Extra wide for chart
-        frame.setMinimumHeight(280)  # Taller for better chart visibility
+        frame.setMinimumWidth(600)  # Even wider for better chart display
+        frame.setMinimumHeight(350)  # Much taller
         layout = QVBoxLayout(frame)
-        layout.setSpacing(16)
+        layout.setSpacing(20)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         title = QLabel("Last 7 Days Activity")
-        title.setStyleSheet("font-size: 20px; font-weight: 600; color: #FFFFFF; margin-bottom: 8px;")
+        title.setStyleSheet("""
+            font-size: 18px; 
+            font-weight: 600; 
+            color: #FFFFFF;
+            margin-bottom: 4px;
+        """)
         layout.addWidget(title)
 
         self.chart_view = QChartView()
         self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.chart_view.setMinimumHeight(200)
+        self.chart_view.setMinimumHeight(260)  # Much taller
+        self.chart_view.setStyleSheet("""
+            QChartView {
+                background-color: transparent;
+                border: none;
+            }
+        """)
         layout.addWidget(self.chart_view)
 
         return frame
@@ -308,10 +331,11 @@ class NetworkingDashboard(QWidget):
             session.close()
 
     def update_chart(self, data: dict):
-        """Update the bar chart with data"""
-        # Create bar set
+        """Update the bar chart with modern styling"""
+        # Create bar set with gradient color
         bar_set = QBarSet("Contacts")
-        bar_set.setColor(QColor("#3498db"))
+        bar_set.setColor(QColor("#FF8B3D"))  # Orange theme color
+        bar_set.setBorderColor(QColor("#FF9E54"))
 
         categories = []
         for label, value in data.items():
@@ -321,6 +345,7 @@ class NetworkingDashboard(QWidget):
         # Create series
         series = QBarSeries()
         series.append(bar_set)
+        series.setBarWidth(0.7)  # Slightly thinner bars for modern look
 
         # Create chart
         chart = QChart()
@@ -328,15 +353,29 @@ class NetworkingDashboard(QWidget):
         chart.setAnimationOptions(QChart.SeriesAnimations)
         chart.legend().setVisible(False)
 
-        # Create axes
+        # Modern chart styling
+        chart.setBackgroundBrush(QColor("#0A0A0A"))  # Match card background
+        chart.setBackgroundRoundness(0)
+        chart.setMargins(QMargins(10, 10, 10, 10))
+
+        # Remove title as we have it above
+        chart.setTitle("")
+
+        # Create axes with modern styling
         axis_x = QBarCategoryAxis()
         axis_x.append(categories)
+        axis_x.setLabelsColor(QColor("#9BA3B1"))  # Light gray labels
+        axis_x.setGridLineVisible(False)
         chart.addAxis(axis_x, Qt.AlignBottom)
         series.attachAxis(axis_x)
 
         axis_y = QValueAxis()
-        axis_y.setRange(0, max(data.values()) + 1 if data.values() else 5)
+        max_value = max(data.values()) if data.values() else 5
+        axis_y.setRange(0, max_value + max(2, max_value * 0.2))  # Add 20% padding
         axis_y.setLabelFormat("%d")
+        axis_y.setLabelsColor(QColor("#9BA3B1"))
+        axis_y.setGridLineColor(QColor("#1E2330"))  # Subtle grid lines
+        axis_y.setGridLineVisible(True)
         chart.addAxis(axis_y, Qt.AlignLeft)
         series.attachAxis(axis_y)
 
