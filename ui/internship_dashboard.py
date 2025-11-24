@@ -35,10 +35,34 @@ class InternshipDashboard(QWidget):
         title.setStyleSheet("font-size: 28px; font-weight: bold; color: #2c3e50;")
         layout.addWidget(title)
 
-        # Action bar
+        # Action bar with primary button
         action_bar = QHBoxLayout()
 
+        # Primary action: View all applications
+        view_all_btn = QPushButton("💼 View All Applications")
+        view_all_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #FF8B3D;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background-color: #FF9E54;
+            }
+            QPushButton:pressed {
+                background-color: #E67A2D;
+            }
+        """)
+        view_all_btn.clicked.connect(self.show_internship_list.emit)
+        action_bar.addWidget(view_all_btn)
+
+        # Secondary action
         stats_btn = QPushButton("View Statistics")
+        stats_btn.setProperty("class", "secondary")
         stats_btn.clicked.connect(self.show_statistics.emit)
         action_bar.addWidget(stats_btn)
 
