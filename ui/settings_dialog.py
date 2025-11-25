@@ -190,6 +190,27 @@ class SettingsDialog(QDialog):
         info_label.setStyleSheet("font-style: italic; color: #7f8c8d; font-size: 12px;")
         info_label.setWordWrap(True)
         layout.addRow("", info_label)
+        
+        # Daily goal setting
+        self.daily_goal_input = QSpinBox()
+        self.daily_goal_input.setMinimum(1)
+        self.daily_goal_input.setMaximum(20)
+        if self.settings and hasattr(self.settings, 'daily_goal'):
+            self.daily_goal_input.setValue(self.settings.daily_goal)
+        else:
+            self.daily_goal_input.setValue(3)
+        
+        layout.addRow(
+            "Daily Contact Goal:",
+            self.daily_goal_input
+        )
+        
+        goal_info_label = QLabel(
+            "Set your daily goal for new networking contacts. Progress shown on dashboard."
+        )
+        goal_info_label.setStyleSheet("font-style: italic; color: #7f8c8d; font-size: 12px;")
+        goal_info_label.setWordWrap(True)
+        layout.addRow("", goal_info_label)
 
         return widget
 
@@ -592,6 +613,7 @@ Best regards,
                 settings.user_ambitions = self.user_ambitions_input.toPlainText().strip()
                 settings.message_template = self.template_input.toPlainText().strip()
                 settings.follow_up_days = self.follow_up_days_input.value()
+                settings.daily_goal = self.daily_goal_input.value()
 
                 session.commit()
                 self.settings_saved.emit()

@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt, Signal, QMargins
 from PySide6.QtCharts import QChart, QChartView, QBarSet, QBarSeries, QBarCategoryAxis, QValueAxis
 from PySide6.QtGui import QPainter, QColor
 from db.models import NetworkingContact, NetworkingStatus
+from utils.smart_followup import SmartFollowUpService
 from db.session import get_session
 from utils.date_helpers import days_since, get_last_n_days, format_date_short
 from sqlalchemy import func
@@ -70,6 +71,10 @@ class NetworkingDashboard(QWidget):
         title = QLabel("Networking")
         title.setStyleSheet("font-size: 32px; font-weight: bold; color: #FFFFFF;")
         layout.addWidget(title)
+        
+        # Goal tracking widget
+        self.goal_widget = self.create_goal_widget()
+        layout.addWidget(self.goal_widget)
 
         # Action bar with primary "View All Contacts" button
         action_bar = QHBoxLayout()
@@ -236,17 +241,69 @@ class NetworkingDashboard(QWidget):
         """)
         layout.addWidget(title)
 
-        self.chart_view = QChartView()
-        self.chart_view.setRenderHint(QPainter.Antialiasing)
-        self.chart_view.setMinimumHeight(260)  # Much taller
-        self.chart_view.setStyleSheet("""
-            QChartView {
-                background-color: transparent;
-                border: none;
-            }
-        """)
+        # Modern custom chart with rounded bars
+        from ui.modern_chart import ModernBarChart
+        self.chart_view = ModernBarChart()
+        self.chart_view.setMinimumHeight(260)
         layout.addWidget(self.chart_view)
 
+        return frame
+    
+    def create_goal_widget(self) -> QFrame:
+        """Create daily goal tracking widget with progress bar"""
+        from utils.goal_service import GoalTrackingService
+        
+        frame = QFrame()
+        frame.setStyleSheet("""
+            QFrame {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                            stop:0 rgba(255, 139, 61, 0.1),
+                                            stop:1 rgba(255, 139, 61, 0.05));
+                border: 1px solid rgba(255, 139, 61, 0.3);
+                border-radius: 8px;
+                padding: 16px;
+            }
+        """)
+        
+        layout = QHBoxLayout(frame)
+        layout.setSpacing(16)
+        
+        # Goal info
+        info_layout = QVBoxLayout()
+        
+        remaining = GoalTrackingService.get_remaining_today()
+        today_count = GoalTrackingService.get_today_count()
+        goal = GoalTrackingService.get_daily_goal()
+        
+        if remaining > 0:
+            self.goal_label = QLabel(f"🎯 Only {remaining} contact{'s' if remaining != 1 else ''} left today to reach your goal!")
+        else:
+            self.goal_label = QLabel(f"🎉 Goal achieved! ({today_count}/{goal} contacts today)")
+        
+        self.goal_label.setStyleSheet("font-size: 14px; font-weight: 600; color: #FF8B3D;")
+        info_layout.addWidget(self.goal_label)
+        
+        # Progress bar
+        from PySide6.QtWidgets import QProgressBar
+        self.goal_progress = QProgressBar()
+        self.goal_progress.setMaximum(100)
+        self.goal_progress.setValue(int(GoalTrackingService.get_progress_percentage()))
+        self.goal_progress.setTextVisible(False)
+        self.goal_progress.setFixedHeight(8)
+        self.goal_progress.setStyleSheet("""
+            QProgressBar {
+                background-color: rgba(255, 255, 255, 0.1);
+                border-radius: 4px;
+            }
+            QProgressBar::chunk {
+                background-color: #FF8B3D;
+                border-radius: 4px;
+            }
+        """)
+        info_layout.addWidget(self.goal_progress)
+        
+        layout.addLayout(info_layout, 1)
+        
         return frame
 
     def create_followup_card(self) -> QFrame:
@@ -300,15 +357,8 @@ class NetworkingDashboard(QWidget):
 
             self.update_chart(daily_counts)
 
-            # Follow-up count
-            settings = session.query(Settings).filter_by(id=1).first()
-            follow_up_days = settings.follow_up_days if settings else 3
-
-            cutoff_date = date.today() - timedelta(days=follow_up_days)
-            followup_count = session.query(NetworkingContact).filter(
-                NetworkingContact.status == NetworkingStatus.COLD_MESSAGE,
-                NetworkingContact.contact_date <= cutoff_date
-            ).count()
+            # Follow-up count using smart logic
+            followup_count = SmartFollowUpService.get_followup_count()
 
             self.followup_count_label.setText(str(followup_count))
             self.followup_btn.setText(f"Needs Follow-Up ({followup_count})")
@@ -331,59 +381,53 @@ class NetworkingDashboard(QWidget):
             session.close()
 
     def update_chart(self, data: dict):
-        """Update the bar chart with modern styling"""
-        # Create bar set with gradient color
-        bar_set = QBarSet("Contacts")
-        bar_set.setColor(QColor("#FF8B3D"))  # Orange theme color
-        bar_set.setBorderColor(QColor("#FF9E54"))
-
-        categories = []
-        for label, value in data.items():
-            categories.append(label)
-            bar_set.append(value)
-
-        # Create series
-        series = QBarSeries()
-        series.append(bar_set)
-        series.setBarWidth(0.7)  # Slightly thinner bars for modern look
-
-        # Create chart
-        chart = QChart()
-        chart.addSeries(series)
-        chart.setAnimationOptions(QChart.SeriesAnimations)
-        chart.legend().setVisible(False)
-
-        # Modern chart styling
-        chart.setBackgroundBrush(QColor("#0A0A0A"))  # Match card background
-        chart.setBackgroundRoundness(0)
-        chart.setMargins(QMargins(10, 10, 10, 10))
-
-        # Remove title as we have it above
-        chart.setTitle("")
-
-        # Create axes with modern styling
-        axis_x = QBarCategoryAxis()
-        axis_x.append(categories)
-        axis_x.setLabelsColor(QColor("#9BA3B1"))  # Light gray labels
-        axis_x.setGridLineVisible(False)
-        chart.addAxis(axis_x, Qt.AlignBottom)
-        series.attachAxis(axis_x)
-
-        axis_y = QValueAxis()
-        max_value = max(data.values()) if data.values() else 5
-        axis_y.setRange(0, max_value + max(2, max_value * 0.2))  # Add 20% padding
-        axis_y.setLabelFormat("%d")
-        axis_y.setLabelsColor(QColor("#9BA3B1"))
-        axis_y.setGridLineColor(QColor("#1E2330"))  # Subtle grid lines
-        axis_y.setGridLineVisible(True)
-        chart.addAxis(axis_y, Qt.AlignLeft)
-        series.attachAxis(axis_y)
-
-        self.chart_view.setChart(chart)
+        """Update the modern bar chart"""
+        self.chart_view.set_data(data)
 
     def refresh(self):
         """Refresh the dashboard data"""
         self.load_data()
+        if hasattr(self, 'goal_widget'):
+            self.refresh_goal_widget()
+
+    def refresh_goal_widget(self):
+        """Refresh goal widget with latest data"""
+        from utils.goal_service import GoalTrackingService
+        
+        remaining = GoalTrackingService.get_remaining_today()
+        today_count = GoalTrackingService.get_today_count()
+        goal = GoalTrackingService.get_daily_goal()
+        
+        # Update label
+        if remaining > 0:
+            self.goal_label.setText(f"🎯 Only {remaining} contact{'s' if remaining != 1 else ''} left today to reach your goal!")
+        else:
+            self.goal_label.setText(f"🎉 Goal achieved! ({today_count}/{goal} contacts today)")
+        
+        # Update progress bar
+        self.goal_progress.setValue(int(GoalTrackingService.get_progress_percentage()))
+
+    
+    def update_followup_count(self, count: int):
+        """Update follow-up counter from notification service"""
+        self.followup_count_label.setText(str(count))
+        self.followup_btn.setText(f"Needs Follow-Up ({count})")
+        
+        # Update styling based on count
+        if count > 0:
+            self.followup_count_label.setStyleSheet("""
+                font-family: 'Inter', 'Segoe UI', sans-serif;
+                font-size: 72px;
+                font-weight: 500;
+                color: #FF8B3D;
+            """)
+        else:
+            self.followup_count_label.setStyleSheet("""
+                font-family: 'Inter', 'Segoe UI', sans-serif;
+                font-size: 72px;
+                font-weight: 500;
+                color: #9BA3B1;
+            """)
 
 
 # Import QColor for chart colors

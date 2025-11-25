@@ -128,6 +128,14 @@ class NetworkingListView(QWidget):
                 border: none;
             }
             QTableWidget::item {
+            }
+            QTableWidget::item:hover {
+                background-color: rgba(255, 139, 61, 0.15);
+            }
+            QTableWidget::item:selected {
+                background-color: rgba(255, 139, 61, 0.25);
+            }
+            QTableWidget::item {
                 color: #FFFFFF;
                 padding: 8px;
             }
@@ -143,22 +151,37 @@ class NetworkingListView(QWidget):
                 font-weight: 600;
             }
         """)
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(8)
         self.table.setHorizontalHeaderLabels([
-            "Name", "Job Title", "Company", "Contact Date", "Status", "Actions"
+            "Name", "Job Title", "Company", "Phone", "LinkedIn", "Contact Date", "Status", "Actions"
         ])
         self.table.horizontalHeader().setStretchLastSection(False)
-        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeToContents)
+        
+        # Use Interactive mode for flexible, spacious columns
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Interactive)
+        
+        # Set generous column widths for breathing room - no squeezing!
+        self.table.setColumnWidth(0, 160)  # Name
+        self.table.horizontalHeader().setMinimumSectionSize(100)
+        self.table.setColumnWidth(1, 200)  # Job Title
+        self.table.setColumnWidth(2, 180)  # Company
+        self.table.setColumnWidth(3, 150)  # Phone
+        self.table.setColumnWidth(4, 140)  # LinkedIn
+        self.table.setColumnWidth(5, 130)  # Contact Date
+        self.table.setColumnWidth(6, 160)  # Status
+        self.table.setColumnWidth(7, 150)  # Actions
+        
+        # Enable horizontal scrolling for smaller screens
+        self.table.setHorizontalScrollMode(QAbstractItemView.ScrollPerPixel)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.table.verticalHeader().setVisible(False)
         self.table.setAlternatingRowColors(True)
         self.table.cellDoubleClicked.connect(self.on_row_double_clicked)
+        
+        # Set very generous row height for full visibility
+        self.table.verticalHeader().setDefaultSectionSize(80)  # 80px row height
+        self.table.verticalHeader().setMinimumSectionSize(70)
 
         # Card view container
         self.cards_scroll = QScrollArea()
@@ -304,27 +327,35 @@ class NetworkingListView(QWidget):
 
             # Job Title
             title_item = QTableWidgetItem(contact.job_title)
-            title_item.setForeground(QColor("#E8EAED"))  # Light gray text
+            title_item.setForeground(QColor("#FFFFFF"))  # White text
             self.table.setItem(row, 1, title_item)
 
             # Company
             company_item = QTableWidgetItem(contact.company)
-            company_item.setForeground(QColor("#E8EAED"))  # Light gray text
+            company_item.setForeground(QColor("#FFFFFF"))  # White text
             self.table.setItem(row, 2, company_item)
+
+            # Phone - clickable button to copy
+            phone_widget = self.create_phone_widget(contact.phone)
+            self.table.setCellWidget(row, 3, phone_widget)
+
+            # LinkedIn - clickable button to open
+            linkedin_widget = self.create_linkedin_widget(contact.linkedin_url)
+            self.table.setCellWidget(row, 4, linkedin_widget)
 
             # Contact Date
             date_str = format_date(contact.contact_date)
             date_item = QTableWidgetItem(date_str)
-            date_item.setForeground(QColor("#9BA3B1"))  # Secondary text color
-            self.table.setItem(row, 3, date_item)
+            date_item.setForeground(QColor("#FFFFFF"))  # White text
+            self.table.setItem(row, 5, date_item)
 
-            # Status (as badge)
-            status_widget = self.create_status_badge(contact.status.value)
-            self.table.setCellWidget(row, 4, status_widget)
+            # Status - inline dropdown for editing
+            status_widget = self.create_status_dropdown(contact.id, contact.status)
+            self.table.setCellWidget(row, 6, status_widget)
 
             # Actions
             actions_widget = self.create_actions_widget(contact.id)
-            self.table.setCellWidget(row, 5, actions_widget)
+            self.table.setCellWidget(row, 7, actions_widget)
 
     def display_card_view(self, contacts):
         """Display contacts as cards in grid layout"""
@@ -463,16 +494,16 @@ class NetworkingListView(QWidget):
         actions_layout.setContentsMargins(0, 12, 0, 0)  # Top margin for separation
 
         # View Details button
-        message_btn = QPushButton("View")
-        message_btn.setToolTip("View Details & Message")
-        message_btn.setFixedSize(70, 32)  # Wider for text
+        message_btn = QPushButton("👁️")  # Eye emoji
+        message_btn.setToolTip("View Details")
+        message_btn.setFixedSize(60, 32)  # Wider for text
         message_btn.setStyleSheet("""
             QPushButton {
                 background-color: #4A9EFF;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 16px;
                 font-weight: 600;
             }
             QPushButton:hover {
@@ -483,7 +514,7 @@ class NetworkingListView(QWidget):
         actions_layout.addWidget(message_btn)
 
         # Edit button
-        edit_btn = QPushButton("Edit")
+        edit_btn = QPushButton("✏️")  # Pencil emoji
         edit_btn.setToolTip("Edit Contact")
         edit_btn.setFixedSize(60, 32)  # Wider for text
         edit_btn.setStyleSheet("""
@@ -492,7 +523,7 @@ class NetworkingListView(QWidget):
                 color: white;
                 border: none;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 16px;
                 font-weight: 600;
             }
             QPushButton:hover {
@@ -503,16 +534,16 @@ class NetworkingListView(QWidget):
         actions_layout.addWidget(edit_btn)
 
         # Delete button
-        delete_btn = QPushButton("Del")
+        delete_btn = QPushButton("🗑️")  # Trash emoji
         delete_btn.setToolTip("Delete Contact")
-        delete_btn.setFixedSize(50, 32)  # Wider for text
+        delete_btn.setFixedSize(60, 32)  # Wider for text
         delete_btn.setStyleSheet("""
             QPushButton {
                 background-color: #FF4757;
                 color: white;
                 border: none;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 16px;
                 font-weight: 600;
             }
             QPushButton:hover {
@@ -561,29 +592,198 @@ class NetworkingListView(QWidget):
         return widget
 
     def create_actions_widget(self, contact_id: int) -> QWidget:
-        """Create actions widget with edit and delete buttons"""
+        """Create simple actions widget"""
         widget = QWidget()
         layout = QHBoxLayout(widget)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(4)
 
-        edit_btn = QPushButton("Edit")
-        edit_btn.setFixedSize(60, 28)
+        # Simple icon buttons
+        edit_btn = QPushButton("✏")
+        edit_btn.setFixedSize(40, 30)
+        edit_btn.setStyleSheet("QPushButton { background: #FF8B3D; color: white; border: none; border-radius: 3px; font-size: 16px; } QPushButton:hover { background: #FF9E54; }")
         edit_btn.clicked.connect(lambda: self.edit_contact(contact_id))
         layout.addWidget(edit_btn)
 
-        delete_btn = QPushButton("Delete")
-        delete_btn.setProperty("class", "danger")
-        delete_btn.setStyleSheet("background-color: #e74c3c; color: white;")
-        delete_btn.setFixedSize(60, 28)
+        delete_btn = QPushButton("×")
+        delete_btn.setFixedSize(40, 30)
+        delete_btn.setStyleSheet("QPushButton { background: #e74c3c; color: white; border: none; border-radius: 3px; font-size: 20px; font-weight: bold; } QPushButton:hover { background: #ff5757; }")
         delete_btn.clicked.connect(lambda: self.delete_contact(contact_id))
         layout.addWidget(delete_btn)
 
         return widget
 
+        return widget
+
+    def create_phone_widget(self, phone: str):
+        """Create clickable phone widget that copies to clipboard"""
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        
+        if phone:
+            phone_btn = QPushButton(phone)
+            phone_btn.setStyleSheet("""
+                QPushButton {
+                     background-color: transparent;
+                    color: #4A9EFF;
+                    border: none;
+                    text-align: left;
+                    padding: 4px 8px;
+                    font-size: 12px;
+                }
+                QPushButton:hover {
+                    background-color: rgba(74, 158, 255, 0.1);
+                    border-radius: 4px;
+                }
+            """)
+            phone_btn.setCursor(Qt.PointingHandCursor)
+            phone_btn.clicked.connect(lambda: self.copy_phone_to_clipboard(phone))
+            layout.addWidget(phone_btn)
+        else:
+            label = QLabel("-")
+            label.setStyleSheet("color: #6B7280; padding: 4px 8px;")
+            layout.addWidget(label)
+        
+        return widget
+
+    def create_linkedin_widget(self, linkedin_url: str):
+        """Create clickable LinkedIn widget that opens URL in browser"""
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        
+        if linkedin_url:
+            linkedin_btn = QPushButton("🔗 Open")
+            linkedin_btn.setStyleSheet("""
+                QPushButton {
+                    background-color: transparent;
+                    color: #0077B5;
+                    border: 1px solid #0077B5;
+                    border-radius: 4px;
+                    padding: 4px 12px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+                QPushButton:hover {
+                    background-color: rgba(0, 119, 181, 0.1);
+                }
+            """)
+            linkedin_btn.setCursor(Qt.PointingHandCursor)
+            linkedin_btn.clicked.connect(lambda: self.open_linkedin_url(linkedin_url))
+            layout.addWidget(linkedin_btn)
+        else:
+            label = QLabel("-")
+            label.setStyleSheet("color: #6B7280; padding: 4px 8px;")
+            layout.addWidget(label)
+        
+        return widget
+
+    def create_status_dropdown(self, contact_id: int, current_status):
+        """Create status dropdown for inline editing"""
+        widget = QWidget()
+        layout = QHBoxLayout(widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        
+        status_combo = QComboBox()
+        status_combo.setStyleSheet("""
+            QComboBox {
+                background-color: #1E2330;
+                color: #FFFFFF;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 4px;
+                padding: 4px 12px;
+                font-size: 11px;
+                font-weight: 600;
+                min-width: 130px;
+            }
+            QComboBox:hover {
+                border: 1px solid #FF8B3D;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 4px solid #FFFFFF;
+                margin-right: 6px;
+            }
+        """)
+        
+        # Add all status options
+        from db.models import NetworkingStatus
+        for status in NetworkingStatus:
+            status_combo.addItem(status.value, status)
+            if status == current_status:
+                status_combo.setCurrentText(status.value)
+        
+        # Connect to update handler
+        status_combo.currentIndexChanged.connect(
+            lambda index: self.update_contact_status(contact_id, status_combo.itemData(index))
+        )
+        
+        layout.addWidget(status_combo)
+        return widget
+
+    def copy_phone_to_clipboard(self, phone: str):
+        """Copy phone number to clipboard and show notification"""
+        from PySide6.QtWidgets import QApplication
+        clipboard = QApplication.clipboard()
+        clipboard.setText(phone)
+        show_success(self, f"📋 Copied: {phone}")
+
+    def open_linkedin_url(self, url: str):
+        """Open LinkedIn URL in default browser"""
+        import webbrowser
+        
+        # Add https:// if not present
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        
+        try:
+            webbrowser.open(url)
+            show_success(self, "🔗 Opening LinkedIn profile...")
+        except Exception as e:
+            from ui.toast import show_error
+            show_error(self, f"Failed to open URL: {str(e)}")
+
+    def update_contact_status(self, contact_id: int, new_status):
+        """Update contact status in database"""
+        from db.session import get_session
+        from db.models import NetworkingContact
+        from ui.toast import show_success, show_error
+        
+        session = get_session()
+        try:
+            contact = session.query(NetworkingContact).filter_by(id=contact_id).first()
+            if contact:
+                from datetime import date
+                contact.status = new_status
+                contact.contact_date = date.today()  # Auto-update date
+                session.commit()
+                
+                # Custom congratulatory messages based on status
+                messages = {
+                    "Has responded": f"🎉 Great news! {contact.name} responded!",
+                    "Call": f"📞 Congratulations on the call with {contact.name}!",
+                    "Interview": f"🌟 Amazing! Interview scheduled with {contact.name}!"
+                }
+                message = messages.get(new_status.value, f"Status updated to: {new_status.value}")
+                show_success(self, message)
+                
+                # Reload contacts to refresh the display
+                self.load_contacts()
+        except Exception as e:
+            session.rollback()
+            show_error(self, f"Failed to update status: {str(e)}")
+        finally:
+            session.close()
+
     def on_row_double_clicked(self, row, column):
         """Handle row double click"""
-        if column == 5:  # Don't open detail if clicking actions
+        if column == 7:  # Don't open detail if clicking actions
             return
 
         contact_id = self.table.item(row, 0).data(Qt.UserRole)

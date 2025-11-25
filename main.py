@@ -50,10 +50,6 @@ def main():
     """Main application entry point"""
     try:
         # Enable high DPI scaling BEFORE creating QApplication
-        # For Qt6, use the new method
-        if hasattr(Qt, 'AA_UseHighDpiPixmaps'):
-            QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-        
         # High DPI policy for Qt6
         QApplication.setHighDpiScaleFactorRoundingPolicy(
             Qt.HighDpiScaleFactorRoundingPolicy.PassThrough

@@ -32,7 +32,8 @@ class Toast(QFrame):
 
         self.setStyleSheet(f"""
             QFrame {{
-                background-color: {bg_color};
+                background-color: rgba(26, 32, 44, 0.95);
+                border: 2px solid {bg_color};
                 border-radius: 8px;
                 padding: 0px;
             }}
@@ -44,13 +45,13 @@ class Toast(QFrame):
 
         # Icon
         icon_label = QLabel(icon)
-        icon_label.setStyleSheet("""
-            QLabel {
-                color: white;
+        icon_label.setStyleSheet(f"""
+            QLabel {{
+                color: {bg_color};
                 font-size: 20px;
                 font-weight: bold;
                 background: transparent;
-            }
+            }}
         """)
         layout.addWidget(icon_label)
 
@@ -98,11 +99,11 @@ class Toast(QFrame):
         anim.start()
 
     def showEvent(self, event):
-        """Position at top-center of parent"""
+        """Position at bottom-left of parent"""
         if self.parent():
             parent_rect = self.parent().rect()
-            x = (parent_rect.width() - self.width()) // 2
-            y = 20
+            x = 20  # 20px from left edge
+            y = parent_rect.height() - self.height() - 20  # 20px from bottom
             self.move(self.parent().mapToGlobal(self.parent().rect().topLeft()) + QPoint(x, y))
         super().showEvent(event)
 

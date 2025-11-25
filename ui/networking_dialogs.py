@@ -320,6 +320,9 @@ class AddEditContactDialog(QDialog):
                 self.contact.name = self.name_input.text().strip()
                 self.contact.job_title = self.job_title_input.text().strip()
                 self.contact.company = self.company_input.text().strip()
+                self.contact.email = self.email_input.text().strip() or None
+                self.contact.linkedin_url = self.linkedin_input.text().strip() or None
+                self.contact.phone = self.phone_input.text().strip() or None
                 self.contact.contact_date = contact_date
                 self.contact.relevant_info = self.relevant_info_input.toPlainText().strip()
                 self.contact.status = self.status_input.currentData()
@@ -332,6 +335,9 @@ class AddEditContactDialog(QDialog):
                     name=self.name_input.text().strip(),
                     job_title=self.job_title_input.text().strip(),
                     company=self.company_input.text().strip(),
+                    email=self.email_input.text().strip() or None,
+                    linkedin_url=self.linkedin_input.text().strip() or None,
+                    phone=self.phone_input.text().strip() or None,
                     contact_date=contact_date,
                     relevant_info=self.relevant_info_input.toPlainText().strip(),
                     status=self.status_input.currentData()

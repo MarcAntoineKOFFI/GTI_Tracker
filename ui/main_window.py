@@ -40,6 +40,9 @@ class MainWindow(QMainWindow):
         self.setup_ui()
         self.setup_shortcuts()
         self.restore_window_state()
+        
+        # Initialize notification service for follow-up reminders
+        self.init_notification_service()
 
     def setup_ui(self):
         """Setup the UI components"""
@@ -321,8 +324,26 @@ class MainWindow(QMainWindow):
 
     def on_settings_saved(self):
         """Handle settings saved"""
-        # Could refresh views if needed
-        pass
+        # Refresh dashboards to update goal widget
+        if hasattr(self, 'networking_dashboard'):
+            self.networking_dashboard.refresh()
+        if hasattr(self, 'internship_dashboard'):
+            self.internship_dashboard.refresh()
+    
+    def init_notification_service(self):
+        """Initialize the follow-up notification service"""
+        try:
+            from utils.notification_service import FollowUpNotificationService
+            self.notification_service = FollowUpNotificationService(self)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to initialize notification service: {e}")
+    
+    def update_followup_count(self, count: int):
+        """Update follow-up counter badge on dashboard"""
+        # This will be called by the notification service
+        if hasattr(self, 'networking_dashboard'):
+            self.networking_dashboard.update_followup_count(count)
 
     def restore_window_state(self):
         """Restore window size and position"""
